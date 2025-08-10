@@ -41,28 +41,44 @@ export function SignUpForm({
     }
 
     try {
-      // 1. Sign up user
+      // Sign up user with metadata including role
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          data: {
+            role: role, // Store role in user metadata
+          },
         },
       });
+
       if (signUpError) throw signUpError;
 
-      // 2. Insert user profile (if user exists)
-      const user = data.user;
-      if (user) {
-        const { error: profileError } = await supabase.from("user_profiles").insert([
-          {
-            id: user.id,
-            email,
-            role,
-          },
-        ]);
-        if (profileError) throw profileError;
+      if (data.user) {
+        // Wait a moment for the trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Try to verify the profile was created
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("id", data.user.id)
+            .single();
+
+          if (profileError) {
+            console.warn("Profile not found immediately after signup:", profileError);
+            // This is expected if the trigger hasn't run yet
+          } else if (profileData) {
+            console.log("Profile created successfully:", profileData);
+          }
+        } catch (profileErr) {
+          console.warn("Profile verification failed:", profileErr);
+        }
       }
+
+      // Redirect to success page
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -99,7 +115,7 @@ export function SignUpForm({
                   required
                   value={role}
                   onChange={e => setRole(e.target.value as "buyer" | "supplier")}
-                  className="border rounded px-2 py-1"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="buyer">Buyer</option>
                   <option value="supplier">Supplier</option>
