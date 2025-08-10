@@ -144,15 +144,30 @@ Repository Structure
    ```env
    SUPABASE_URL=your_supabase_project_url
    SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    ```
 
-4. **Run the development server**
+4. **Seed Demo Accounts (Optional)**
+
+   To create test accounts for development and review:
+
+   ```bash
+   pnpm run seed-demo
+   ```
+
+   This creates the following demo accounts:
+   - **Buyer**: <buyer@test.com> / password123
+   - **Supplier**: <supplier@test.com> / password123
+
+   > **Note**: Requires `SUPABASE_SERVICE_ROLE_KEY` in your environment variables.
+
+5. **Run the development server**
 
    ```bash
    pnpm run dev
    ```
 
-5. **Open your browser**
+6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 📊 Database Schema (Simplified)
@@ -178,6 +193,9 @@ Repository Structure
 - `pnpm run start` - Start production server
 - `pnpm run lint` - Run ESLint
 - `pnpm run type-check` - Run TypeScript type checking
+- `pnpm run seed-demo` - Create demo accounts for testing
+- `pnpm run setup-db` - Setup database tables
+- `pnpm run test:auth` - Test authentication system
 
 ## 📚 Documentation
 
@@ -187,6 +205,7 @@ Repository Structure
 - **[Database Setup](docs/database-setup.md)** - Database setup guide
 - **[Implementation Status](docs/implementation-status.md)** - Current development status
 - **[Test Users](docs/test-users-readme.md)** - Testing information
+- **[Demo Account Seeding](docs/SEEDING-README.md)** - How to create test accounts
 - **[Deployment Guide](deployment/readme.md)** - Quick deployment instructions
 
 ## 📦 Deployment

@@ -34,7 +34,7 @@ export function LoginForm({
     try {
       await authApi.login(email, password);
       // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+      router.push("/dashboard");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -63,6 +63,7 @@ export function LoginForm({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  data-testid="email-input"
                 />
               </div>
               <div className="grid gap-2">
@@ -81,10 +82,11 @@ export function LoginForm({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  data-testid="password-input"
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading} data-testid="login-submit">
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </div>
