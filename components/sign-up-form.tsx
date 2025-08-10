@@ -23,6 +23,7 @@ export function SignUpForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [role, setRole] = useState<"buyer" | "supplier">("buyer");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -40,14 +41,28 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // 1. Sign up user
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/protected`,
         },
       });
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+
+      // 2. Insert user profile (if user exists)
+      const user = data.user;
+      if (user) {
+        const { error: profileError } = await supabase.from("user_profiles").insert([
+          {
+            id: user.id,
+            email,
+            role,
+          },
+        ]);
+        if (profileError) throw profileError;
+      }
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -76,6 +91,19 @@ export function SignUpForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  required
+                  value={role}
+                  onChange={e => setRole(e.target.value as "buyer" | "supplier")}
+                  className="border rounded px-2 py-1"
+                >
+                  <option value="buyer">Buyer</option>
+                  <option value="supplier">Supplier</option>
+                </select>
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
