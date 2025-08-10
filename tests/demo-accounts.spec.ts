@@ -1,21 +1,15 @@
 import { test, expect } from '@playwright/test';
+import {
+    loginAsBuyer,
+    loginAsSupplier,
+    loginWithCredentials,
+    logout,
+    isLoggedIn,
+    ensureLoggedIn,
+    DEMO_ACCOUNTS
+} from './utils/auth-helpers';
 
 test.describe('Demo Account Seeding - Issue #5', () => {
-    const demoAccounts = [
-        {
-            email: 'buyer@test.com',
-            password: 'password123',
-            role: 'buyer',
-            company: 'Demo Buyer Corp'
-        },
-        {
-            email: 'supplier@test.com',
-            password: 'password123',
-            role: 'supplier',
-            company: 'Demo Supplier Inc'
-        }
-    ];
-
     test.beforeEach(async ({ page }) => {
         // Navigate to the home page before each test
         await page.goto('/');
@@ -23,42 +17,14 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
     test.describe('Demo Account Creation and Login', () => {
         test('should be able to login with buyer demo account', async ({ page }) => {
-            // Navigate to login page
-            await page.goto('/auth/login');
-
-            // Fill in buyer demo credentials
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-
-            // Submit login form
-            await page.click('[data-testid="login-submit"]');
-
-            // Wait for successful login and redirect
-            await page.waitForURL('/dashboard');
-
-            // Verify we're logged in and on the dashboard page
-            await expect(page.locator('text=Dashboard')).toBeVisible();
+            await loginAsBuyer(page);
 
             // Check if role-specific content is visible (Create New RFP button for buyers)
             await expect(page.locator('text=Create RFP')).toBeVisible();
         });
 
         test('should be able to login with supplier demo account', async ({ page }) => {
-            // Navigate to login page
-            await page.goto('/auth/login');
-
-            // Fill in supplier demo credentials
-            await page.fill('[data-testid="email-input"]', 'supplier@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-
-            // Submit login form
-            await page.click('[data-testid="login-submit"]');
-
-            // Wait for successful login and redirect
-            await page.waitForURL('/dashboard');
-
-            // Verify we're logged in and on the dashboard page
-            await expect(page.locator('text=Dashboard')).toBeVisible();
+            await loginAsSupplier(page);
 
             // Check if role-specific content is visible (Browse RFPs button for suppliers)
             await expect(page.locator('text=Browse RFPs')).toBeVisible();
@@ -83,11 +49,7 @@ test.describe('Demo Account Seeding - Issue #5', () => {
     test.describe('Role-Based Access Control (RBAC)', () => {
         test('buyer should have access to buyer-specific features', async ({ page }) => {
             // Login as buyer
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsBuyer(page);
 
             // Navigate to buyer-specific pages
             await page.goto('/rfps/create');
@@ -99,11 +61,7 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
         test('supplier should have access to supplier-specific features', async ({ page }) => {
             // Login as supplier
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'supplier@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsSupplier(page);
 
             // Navigate to supplier-specific pages
             await page.goto('/rfps');
@@ -115,11 +73,7 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
         test('buyer should not have access to supplier features', async ({ page }) => {
             // Login as buyer
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsBuyer(page);
 
             // Try to access supplier-specific page
             await page.goto('/responses');
@@ -130,11 +84,7 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
         test('supplier should not have access to buyer features', async ({ page }) => {
             // Login as supplier
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'supplier@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsSupplier(page);
 
             // Try to access buyer-specific page
             await page.goto('/rfps/create');
@@ -147,11 +97,7 @@ test.describe('Demo Account Seeding - Issue #5', () => {
     test.describe('User Profile Management', () => {
         test('should display correct user profile information', async ({ page }) => {
             // Login as buyer
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsBuyer(page);
 
             // Navigate to profile page
             await page.goto('/profile');
@@ -165,11 +111,7 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
         test('should allow profile updates', async ({ page }) => {
             // Login as supplier
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'supplier@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsSupplier(page);
 
             // Navigate to profile page
             await page.goto('/profile');
@@ -194,11 +136,7 @@ test.describe('Demo Account Seeding - Issue #5', () => {
     test.describe('Session Management', () => {
         test('should maintain session across page navigation', async ({ page }) => {
             // Login as buyer
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsBuyer(page);
 
             // Navigate to different pages
             await page.goto('/rfps');
@@ -213,37 +151,25 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
         test('should logout successfully', async ({ page }) => {
             // Login as supplier
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'supplier@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsSupplier(page);
 
             // Click logout button
-            await page.click('button[aria-label="Logout"]');
-
-            // Should be redirected to login page
-            await page.waitForURL('/auth/login');
-            await expect(page.locator('text=Sign In')).toBeVisible();
+            await logout(page);
         });
     });
 
     test.describe('API Endpoint Testing', () => {
         test('should access protected API endpoints with valid session', async ({ page }) => {
             // Login as buyer
-            await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
-            await page.click('[data-testid="login-submit"]');
-            await page.waitForURL('/dashboard');
+            await loginAsBuyer(page);
 
             // Test API endpoint access
             const response = await page.request.get('/api/profile/me');
             expect(response.status()).toBe(200);
 
             const profileData = await response.json();
-            expect(profileData.user.email).toBe('buyer@test.com');
-            expect(profileData.user.user_metadata.role).toBe('buyer');
+            expect(profileData.user.email).toBe(DEMO_ACCOUNTS.buyer.email);
+            expect(profileData.user.user_metadata.role).toBe(DEMO_ACCOUNTS.buyer.role);
         });
 
         test('should reject API access without authentication', async ({ page }) => {
@@ -257,18 +183,13 @@ test.describe('Demo Account Seeding - Issue #5', () => {
         test('should handle multiple login attempts gracefully', async ({ page }) => {
             // Login as buyer multiple times
             for (let i = 0; i < 3; i++) {
-                await page.goto('/auth/login');
-                await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-                await page.fill('[data-testid="password-input"]', 'password123');
-                await page.click('[data-testid="login-submit"]');
-                await page.waitForURL('/dashboard');
+                await loginAsBuyer(page);
 
                 // Verify successful login
                 await expect(page.locator('text=Dashboard')).toBeVisible();
 
                 // Logout for next iteration
-                await page.click('button[aria-label="Logout"]');
-                await page.waitForURL('/auth/login');
+                await logout(page);
             }
         });
     });
@@ -280,8 +201,8 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
             // Try to login
             await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
+            await page.fill('[data-testid="email-input"]', DEMO_ACCOUNTS.buyer.email);
+            await page.fill('[data-testid="password-input"]', DEMO_ACCOUNTS.buyer.password);
             await page.click('[data-testid="login-submit"]');
 
             // Should show appropriate error message
@@ -296,12 +217,50 @@ test.describe('Demo Account Seeding - Issue #5', () => {
 
             // Try to login
             await page.goto('/auth/login');
-            await page.fill('[data-testid="email-input"]', 'buyer@test.com');
-            await page.fill('[data-testid="password-input"]', 'password123');
+            await page.fill('[data-testid="email-input"]', DEMO_ACCOUNTS.buyer.email);
+            await page.fill('[data-testid="password-input"]', DEMO_ACCOUNTS.buyer.password);
             await page.click('[data-testid="login-submit"]');
 
             // Should show appropriate error message
             await expect(page.locator('text=Server error')).toBeVisible();
+        });
+    });
+
+    test.describe('Auth Helper Functions', () => {
+        test('should use ensureLoggedIn helper correctly', async ({ page }) => {
+            // Ensure we're logged in as buyer
+            await ensureLoggedIn(page, 'buyer');
+
+            // Verify we're on dashboard
+            await expect(page.locator('text=Dashboard')).toBeVisible();
+
+            // Try to ensure logged in again (should not re-login)
+            await ensureLoggedIn(page, 'buyer');
+
+            // Should still be on dashboard
+            await expect(page.locator('text=Dashboard')).toBeVisible();
+        });
+
+        test('should use custom credentials helper', async ({ page }) => {
+            // Login with custom credentials
+            await loginWithCredentials(page, {
+                email: DEMO_ACCOUNTS.supplier.email,
+                password: DEMO_ACCOUNTS.supplier.password
+            });
+
+            // Verify we're logged in
+            await expect(page.locator('text=Dashboard')).toBeVisible();
+        });
+
+        test('should check login status correctly', async ({ page }) => {
+            // Should not be logged in initially
+            expect(await isLoggedIn(page)).toBe(false);
+
+            // Login as buyer
+            await loginAsBuyer(page);
+
+            // Should be logged in now
+            expect(await isLoggedIn(page)).toBe(true);
         });
     });
 }); 

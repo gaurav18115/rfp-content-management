@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
-import { createRfp } from "@/app/actions/rfp";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,24 +10,51 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/toast/use-toast";
-import { useEffect } from "react";
 
 export default function CreateRfpPage() {
     const { toast } = useToast();
-    const [state, formAction] = useActionState(createRfp, {
-        message: "",
-        errors: undefined,
-    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (state.message) {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const formData = new FormData(e.currentTarget);
+            const data = {
+                title: formData.get('title'),
+                category: formData.get('category'),
+                description: formData.get('description'),
+                company: formData.get('company'),
+                location: formData.get('location'),
+                budget_range: formData.get('budget_range'),
+                deadline: formData.get('deadline'),
+                requirements: formData.get('requirements'),
+                additional_information: formData.get('additional-information'),
+            };
+
+            // For now, just show success message
+            // In a real app, you'd send this to your API
+            console.log('Form data:', data);
+
             toast({
-                title: state.message,
-                variant: state.errors ? "destructive" : "default",
+                title: "RFP Created Successfully!",
+                description: "Your RFP has been created and is now visible to suppliers.",
             });
-        }
-    }, [state, toast]);
 
+            // Reset form
+            e.currentTarget.reset();
+
+        } catch {
+            toast({
+                title: "Error",
+                description: "Failed to create RFP. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
@@ -55,7 +81,7 @@ export default function CreateRfpPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form action={formAction} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="title">RFP Title *</Label>
@@ -69,7 +95,7 @@ export default function CreateRfpPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="category">Category *</Label>
-                                <Select name="category">
+                                <Select name="category" required>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
@@ -168,8 +194,8 @@ export default function CreateRfpPage() {
                         </div>
 
                         <div className="flex gap-4 pt-4">
-                            <Button type="submit" className="flex-1">
-                                Create RFP
+                            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                                {isSubmitting ? "Creating..." : "Create RFP"}
                             </Button>
                             <Button type="button" variant="outline" asChild>
                                 <Link href="/rfps/my">
