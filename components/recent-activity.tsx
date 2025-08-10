@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, FileText, MessageSquare, User, Award, AlertCircle } from "lucide-react";
+import { Clock, FileText, MessageSquare, User, Award } from "lucide-react";
 
 interface ActivityItem {
     id: string;
@@ -153,7 +153,7 @@ export function RecentActivity() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {activities.map((activity, index) => (
+                    {activities.map((activity) => (
                         <div key={activity.id} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-b-0">
                             <div className="flex-shrink-0 mt-1">
                                 <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">

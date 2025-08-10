@@ -15,7 +15,7 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center py-6">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Welcome back! Here's what's happening with your RFPs.</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Welcome back! Here&apos;s what&apos;s happening with your RFPs.</p>
                         </div>
                         <div className="flex items-center space-x-4">
                             <Button asChild>

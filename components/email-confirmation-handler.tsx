@@ -32,9 +32,6 @@ export function EmailConfirmationHandler() {
                 if (data.session) {
                     console.log("Email confirmation successful, user is now authenticated");
 
-                    // Get user role from metadata
-                    const userRole = data.user?.user_metadata?.role || "buyer";
-
                     // Redirect to dashboard (you can add role-based logic here later)
                     router.push("/dashboard");
                 } else {

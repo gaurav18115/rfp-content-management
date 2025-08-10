@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Calendar, Building, MapPin, Plus, Eye, Edit } from "lucide-react";
+import { FileText, Calendar, Building, Plus, Eye, Edit } from "lucide-react";
 import Link from "next/link";
 
 export default function MyRfpsPage() {
@@ -82,8 +82,8 @@ export default function MyRfpsPage() {
                             <CardContent>
                                 <div className="flex items-center justify-between mb-4">
                                     <span className={`text-xs px-2 py-1 rounded-full ${rfp.status === 'published'
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-yellow-100 text-yellow-800'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-yellow-100 text-yellow-800'
                                         }`}>
                                         {rfp.status === 'published' ? 'Published' : 'Draft'}
                                     </span>
@@ -176,7 +176,7 @@ export default function MyRfpsPage() {
                         <FileText size="48" className="mx-auto text-muted-foreground mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No Responses Yet</h3>
                         <p className="text-muted-foreground">
-                            You haven't responded to any RFPs yet. Browse available RFPs to get started.
+                            You haven&apos;t responded to any RFPs yet. Browse available RFPs to get started.
                         </p>
                     </div>
                 )}

@@ -36,7 +36,11 @@ export async function GET(request: NextRequest) {
         type,
         token,
         email: '', // Required by type but not used when token is provided
-      } as any); // Type assertion to bypass strict typing
+      } as {
+        type: EmailOtpType;
+        token: string;
+        email: string;
+      });
 
       if (!error) {
         console.log("OTP verification successful, redirecting to:", next);

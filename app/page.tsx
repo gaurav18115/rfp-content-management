@@ -5,12 +5,15 @@ import { RecentActivity } from "@/components/recent-activity";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { EmailConfirmationHandler } from "@/components/email-confirmation-handler";
 import Link from "next/link";
+import { Suspense } from "react";
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col">
       {/* Email Confirmation Handler - This will process confirmation codes */}
-      <EmailConfirmationHandler />
+      <Suspense fallback={null}>
+        <EmailConfirmationHandler />
+      </Suspense>
 
       {/* Navigation */}
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">

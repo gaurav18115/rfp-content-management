@@ -42,7 +42,7 @@ export function SignUpForm({
     }
 
     try {
-      const response = await authApi.signup(email, password, role);
+      await authApi.signup(email, password, role);
 
       // Since we're not requiring email confirmation, redirect immediately
       setSuccess("Account created successfully! Redirecting...");
