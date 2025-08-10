@@ -24,7 +24,7 @@ export function Navigation() {
         <nav className="bg-background border-b px-6 py-4">
             <div className="flex items-center justify-between max-w-7xl mx-auto">
                 <div className="flex items-center gap-6">
-                    <Link href="/protected" className="flex items-center gap-2">
+                    <Link href="/dashboard" className="flex items-center gap-2">
                         <HomeIcon size="20" />
                         <span className="font-semibold">RFP Manager</span>
                     </Link>

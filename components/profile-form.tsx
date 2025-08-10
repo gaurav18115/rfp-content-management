@@ -87,6 +87,7 @@ export function ProfileForm() {
                             value={profile.email}
                             disabled
                             className="bg-muted"
+                            data-testid="email-input"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -96,6 +97,7 @@ export function ProfileForm() {
                             value={profile.role}
                             disabled
                             className="bg-muted"
+                            data-testid="role-input"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -107,6 +109,7 @@ export function ProfileForm() {
                                 setFormData({ ...formData, first_name: e.target.value })
                             }
                             placeholder="Enter your first name"
+                            data-testid="first-name-input"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -118,6 +121,7 @@ export function ProfileForm() {
                                 setFormData({ ...formData, last_name: e.target.value })
                             }
                             placeholder="Enter your last name"
+                            data-testid="last-name-input"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -129,6 +133,7 @@ export function ProfileForm() {
                                 setFormData({ ...formData, company_name: e.target.value })
                             }
                             placeholder="Enter your company name"
+                            data-testid="company-name-input"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -140,6 +145,7 @@ export function ProfileForm() {
                                 setFormData({ ...formData, contact_phone: e.target.value })
                             }
                             placeholder="Enter your contact phone"
+                            data-testid="contact-phone-input"
                         />
                     </div>
                     {error && (
@@ -148,7 +154,7 @@ export function ProfileForm() {
                     {success && (
                         <p className="text-sm text-green-500">{success}</p>
                     )}
-                    <Button type="submit" disabled={saving} className="w-full">
+                    <Button type="submit" disabled={saving} className="w-full" data-testid="profile-submit">
                         {saving ? "Saving..." : "Save Changes"}
                     </Button>
                 </form>

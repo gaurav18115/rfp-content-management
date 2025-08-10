@@ -19,7 +19,9 @@
     "setup-db-v2": "node scripts/setup-db-v2.js",
     "setup-db-v3": "node scripts/setup-db-v3.js",
     "manual-setup-guide": "node scripts/manual-setup-guide.js",
-    "verify-db": "node scripts/verify-db.js"
+    "verify-db": "node scripts/verify-db.js",
+    "seed-demo": "node scripts/seed-demo-accounts.js",
+    "test-seeding": "node scripts/test-seeding.js"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.2",

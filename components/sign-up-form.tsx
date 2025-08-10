@@ -73,6 +73,7 @@ export function SignUpForm({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  data-testid="email-input"
                 />
               </div>
               <div className="grid gap-2">
@@ -83,6 +84,7 @@ export function SignUpForm({
                   value={role}
                   onChange={e => setRole(e.target.value as "buyer" | "supplier")}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  data-testid="role-select"
                 >
                   <option value="buyer">Buyer</option>
                   <option value="supplier">Supplier</option>
@@ -98,6 +100,7 @@ export function SignUpForm({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  data-testid="password-input"
                 />
               </div>
               <div className="grid gap-2">
@@ -110,11 +113,12 @@ export function SignUpForm({
                   required
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
+                  data-testid="repeat-password-input"
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               {success && <p className="text-sm text-green-600">{success}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading} data-testid="signup-submit">
                 {isLoading ? "Creating an account..." : "Sign up"}
               </Button>
             </div>

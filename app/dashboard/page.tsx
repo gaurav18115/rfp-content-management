@@ -3,10 +3,21 @@ import { DashboardCharts } from "@/components/dashboard-charts";
 import { RecentActivity } from "@/components/recent-activity";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, MessageSquare, Users, TrendingUp } from "lucide-react";
+import { Plus, FileText, MessageSquare, Users, TrendingUp, UserIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+    const supabase = await createClient();
+
+    // Get user profile
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", user?.id)
+        .single();
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
@@ -15,15 +26,19 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center py-6">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Welcome back! Here&apos;s what&apos;s happening with your RFPs.</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}! Here&apos;s what&apos;s happening with your RFPs.
+                            </p>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <Button asChild>
-                                <Link href="/rfp/create">
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Create RFP
-                                </Link>
-                            </Button>
+                            {profile?.role === 'buyer' && (
+                                <Button asChild>
+                                    <Link href="/rfps/create">
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Create RFP
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -31,6 +46,80 @@ export default function DashboardPage() {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* User Profile Card */}
+                <div className="mb-8">
+                    <Card className="bg-card border rounded-lg p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <UserIcon size="20" />
+                            <h2 className="font-bold text-xl">Profile Information</h2>
+                        </div>
+
+                        {profile ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div>
+                                    <span className="text-sm text-muted-foreground">Email:</span>
+                                    <p className="font-medium">{profile.email}</p>
+                                </div>
+                                <div>
+                                    <span className="text-sm text-muted-foreground">Role:</span>
+                                    <p className="font-medium capitalize">{profile.role}</p>
+                                </div>
+                                {profile.first_name && (
+                                    <div>
+                                        <span className="text-sm text-muted-foreground">First Name:</span>
+                                        <p className="font-medium">{profile.first_name}</p>
+                                    </div>
+                                )}
+                                {profile.last_name && (
+                                    <div>
+                                        <span className="text-sm text-muted-foreground">Last Name:</span>
+                                        <p className="font-medium">{profile.last_name}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">Profile not found</p>
+                        )}
+
+                        <div className="mt-6">
+                            <Link href="/profile">
+                                <Button variant="outline">
+                                    <SettingsIcon size="16" className="mr-2" />
+                                    Edit Profile
+                                </Button>
+                            </Link>
+                        </div>
+                    </Card>
+                </div>
+
+                {/* Quick Actions Card */}
+                <div className="mb-8">
+                    <Card className="bg-card border rounded-lg p-6">
+                        <h2 className="font-bold text-xl mb-4">Quick Actions</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {profile?.role === 'buyer' && (
+                                <Link href="/rfps/create">
+                                    <Button className="w-full" variant="default">
+                                        Create New RFP
+                                    </Button>
+                                </Link>
+                            )}
+                            {profile?.role === 'supplier' && (
+                                <Link href="/rfps">
+                                    <Button className="w-full" variant="default">
+                                        Browse RFPs
+                                    </Button>
+                                </Link>
+                            )}
+                            <Link href="/rfps/my">
+                                <Button className="w-full" variant="outline">
+                                    My RFPs
+                                </Button>
+                            </Link>
+                        </div>
+                    </Card>
+                </div>
+
                 {/* Quick Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <Card className="hover:shadow-lg transition-shadow">
