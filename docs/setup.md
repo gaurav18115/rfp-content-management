@@ -41,7 +41,7 @@
 
 ### Step 2: Execute Database Schema
 
-1. Copy the entire contents of `database-schema.sql`
+1. Copy the entire contents of `sql/database-schema.sql`
 2. Paste it into the SQL Editor in Supabase
 3. Click **Run** to execute all statements
 

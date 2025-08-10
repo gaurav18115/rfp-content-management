@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(req: NextRequest) {
   try {
-    const { company_name, contact_phone } = await req.json();
+    const { first_name, last_name, company_name, contact_phone } = await req.json();
 
     const supabase = await createClient();
 
@@ -17,6 +17,8 @@ export async function PUT(req: NextRequest) {
     const { error: updateError } = await supabase
       .from("user_profiles")
       .update({
+        first_name,
+        last_name,
         company_name,
         contact_phone,
       })

@@ -33,7 +33,7 @@ The automated database setup script cannot work because:
 
 ### Step 3: Execute Database Schema
 
-1. **Copy the schema**: Open `database-schema.sql` in your project
+1. **Copy the schema**: Open `sql/database-schema.sql` in your project
 2. **Select all content**: Ctrl+A (or Cmd+A on Mac) to select everything
 3. **Copy**: Ctrl+C (or Cmd+C on Mac)
 4. **Paste in Supabase**: Click in the SQL Editor and paste (Ctrl+V or Cmd+V)
@@ -58,11 +58,20 @@ npm run verify-db
 
 You should see all tables marked with ✅.
 
-## What the Schema Creates
+### What the Schema Creates
 
 ### Tables
 
-- **`user_profiles`**: User information and roles
+- **`user_profiles`**: User information, roles, names, and company details
+  - `id`: Unique user identifier (UUID)
+  - `email`: User's email address
+  - `role`: User role (buyer or supplier)
+  - `first_name`: User's first name
+  - `last_name`: User's last name
+  - `company_name`: User's company name
+  - `contact_phone`: User's contact phone number
+  - `created_at`: Account creation timestamp
+  - `updated_at`: Last profile update timestamp
 - **`rfps`**: Request for Proposal data
 - **`rfp_responses`**: Supplier responses to RFPs
 - **`documents`**: File storage and management
@@ -111,6 +120,14 @@ npm run test-db
 # Verify all tables exist
 npm run verify-db
 ```
+
+### Migration for Existing Databases
+
+If you have an existing database that needs the new `first_name` and `last_name` fields, run the migration script:
+
+1. **Copy the migration**: Open `sql/database-migration.sql` in your project
+2. **Execute in Supabase**: Run the migration script in the SQL Editor
+3. **Verify**: Check that the new columns were added successfully
 
 ## Next Steps
 

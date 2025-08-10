@@ -46,6 +46,18 @@ export default async function ProtectedPage() {
                 <span className="text-sm text-muted-foreground">Role:</span>
                 <p className="font-medium capitalize">{profile.role}</p>
               </div>
+              {profile.first_name && (
+                <div>
+                  <span className="text-sm text-muted-foreground">First Name:</span>
+                  <p className="font-medium">{profile.first_name}</p>
+                </div>
+              )}
+              {profile.last_name && (
+                <div>
+                  <span className="text-sm text-muted-foreground">Last Name:</span>
+                  <p className="font-medium">{profile.last_name}</p>
+                </div>
+              )}
               {profile.company_name && (
                 <div>
                   <span className="text-sm text-muted-foreground">Company:</span>

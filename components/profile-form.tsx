@@ -21,6 +21,8 @@ export function ProfileForm() {
     const [success, setSuccess] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
+        first_name: "",
+        last_name: "",
         company_name: "",
         contact_phone: "",
     });
@@ -28,6 +30,8 @@ export function ProfileForm() {
     useEffect(() => {
         if (profile) {
             setFormData({
+                first_name: profile.first_name || "",
+                last_name: profile.last_name || "",
                 company_name: profile.company_name || "",
                 contact_phone: profile.contact_phone || "",
             });
@@ -43,7 +47,7 @@ export function ProfileForm() {
         setSuccess(null);
 
         try {
-            await profileApi.update(formData.company_name, formData.contact_phone);
+            await profileApi.update(formData.first_name, formData.last_name, formData.company_name, formData.contact_phone);
             setSuccess("Profile updated successfully!");
             await refreshProfile();
         } catch (err: unknown) {
@@ -92,6 +96,28 @@ export function ProfileForm() {
                             value={profile.role}
                             disabled
                             className="bg-muted"
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="first_name">First Name</Label>
+                        <Input
+                            id="first_name"
+                            value={formData.first_name}
+                            onChange={(e) =>
+                                setFormData({ ...formData, first_name: e.target.value })
+                            }
+                            placeholder="Enter your first name"
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="last_name">Last Name</Label>
+                        <Input
+                            id="last_name"
+                            value={formData.last_name}
+                            onChange={(e) =>
+                                setFormData({ ...formData, last_name: e.target.value })
+                            }
+                            placeholder="Enter your last name"
                         />
                     </div>
                     <div className="grid gap-2">

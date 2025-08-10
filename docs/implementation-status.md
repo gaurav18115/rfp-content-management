@@ -14,9 +14,9 @@
 ### User Profile Management
 
 - **Automatic Profile Creation**: Database trigger creates `user_profiles` on signup
-- **Profile Editing**: Form to update company name and contact phone
+- **Profile Editing**: Form to update first name, last name, company name and contact phone
 - **Role Management**: Buyer/supplier role system with validation
-- **Profile Display**: Shows user info in protected dashboard
+- **Profile Display**: Shows user info including names in protected dashboard
 
 ### Database Schema
 

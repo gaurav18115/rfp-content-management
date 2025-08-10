@@ -6,6 +6,8 @@ export type UserProfile = {
   id: string;
   email: string;
   role: "buyer" | "supplier";
+  first_name?: string;
+  last_name?: string;
   company_name?: string;
   contact_phone?: string;
   created_at?: string;

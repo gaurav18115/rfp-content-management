@@ -59,6 +59,8 @@ export interface UserProfile {
     id: string;
     email: string;
     role: "buyer" | "supplier";
+    first_name?: string;
+    last_name?: string;
     company_name?: string;
     contact_phone?: string;
     created_at?: string;
@@ -105,9 +107,9 @@ export const profileApi = {
     getMe: () =>
         apiCall<ProfileResponse>('/api/profile/me'),
 
-    update: (company_name: string, contact_phone: string) =>
+    update: (first_name: string, last_name: string, company_name: string, contact_phone: string) =>
         apiCall<ProfileUpdateResponse>('/api/profile', {
             method: 'PUT',
-            body: JSON.stringify({ company_name, contact_phone }),
+            body: JSON.stringify({ first_name, last_name, company_name, contact_phone }),
         }),
 }; 

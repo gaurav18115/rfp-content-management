@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
   role TEXT NOT NULL CHECK (role IN ('buyer', 'supplier')),
+  first_name TEXT,
+  last_name TEXT,
   company_name TEXT,
   contact_phone TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
