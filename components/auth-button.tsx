@@ -1,22 +1,29 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { createClient } from "@/lib/supabase/server";
+import { useUser } from "@/lib/contexts/UserContext";
 import { LogoutButton } from "./logout-button";
 
-export async function AuthButton() {
-  const supabase = await createClient();
+export function AuthButton() {
+  const { user, profile, loading } = useUser();
 
-  // You can also use getUser() which will be slower.
-  const { data } = await supabase.auth.getClaims();
+  if (loading) {
+    return <div className="text-sm">Loading...</div>;
+  }
 
-  const user = data?.claims;
+  if (user && profile) {
+    return (
+      <div className="flex items-center gap-4">
+        <span className="text-sm">
+          Hey, {profile.email} ({profile.role})!
+        </span>
+        <LogoutButton />
+      </div>
+    );
+  }
 
-  return user ? (
-    <div className="flex items-center gap-4">
-      Hey, {user.email}!
-      <LogoutButton />
-    </div>
-  ) : (
+  return (
     <div className="flex gap-2">
       <Button asChild size="sm" variant={"outline"}>
         <Link href="/auth/login">Sign in</Link>

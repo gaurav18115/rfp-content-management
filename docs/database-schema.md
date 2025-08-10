@@ -23,6 +23,8 @@ CREATE TABLE public.user_profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
   role TEXT NOT NULL CHECK (role IN ('buyer', 'supplier')),
+  first_name TEXT,
+  last_name TEXT,
   company_name TEXT,
   contact_phone TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -215,6 +217,8 @@ erDiagram
         UUID id PK
         TEXT email
         TEXT role
+        TEXT first_name
+        TEXT last_name
         TEXT company_name
         TEXT contact_phone
         TIMESTAMP created_at

@@ -19,14 +19,18 @@ This system demonstrates the ability to create production-ready applications usi
 
 ```
 Repository Structure
-├── README.md
+├── readme.md
 ├── frontend/
 ├── backend/
 ├── docs/
 │   ├── api-docs.md
-│   └── database-schema.md
+│   ├── database-schema.md
+│   ├── test-users-readme.md
+│   ├── implementation-status.md
+│   ├── database-setup.md
+│   └── setup.md
 └── deployment/
-    └── README.md
+    └── readme.md
 ```
 
 ## ✨ Core Features (MVP)
@@ -138,8 +142,8 @@ Repository Structure
    Update `.env.local` with your Supabase credentials:
 
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
    ```
 
 4. **Run the development server**
@@ -179,7 +183,11 @@ Repository Structure
 
 - **[API Documentation](docs/api-docs.md)** - Complete API reference
 - **[Database Schema](docs/database-schema.md)** - Database design and relationships
-- **[Deployment Guide](deployment/README.md)** - Quick deployment instructions
+- **[Setup Guide](docs/setup.md)** - Setup instructions
+- **[Database Setup](docs/database-setup.md)** - Database setup guide
+- **[Implementation Status](docs/implementation-status.md)** - Current development status
+- **[Test Users](docs/test-users-readme.md)** - Testing information
+- **[Deployment Guide](deployment/readme.md)** - Quick deployment instructions
 
 ## 📦 Deployment
 
