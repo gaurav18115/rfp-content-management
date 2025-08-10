@@ -142,8 +142,8 @@ Repository Structure
    Update `.env.local` with your Supabase credentials:
 
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
    ```
 
 4. **Run the development server**

@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function DELETE(req: NextRequest) {
+export async function POST(request: NextRequest) {
     try {
-        const { email } = await req.json();
+        const { email } = await request.json();
 
         if (!email) {
             return NextResponse.json(
@@ -12,17 +12,9 @@ export async function DELETE(req: NextRequest) {
             );
         }
 
-        // Only allow cleanup of test users (for testing purposes)
-        if (!email.includes('@test.com') && !email.includes('@gmail.com')) {
-            return NextResponse.json(
-                { error: "Only test users can be cleaned up" },
-                { status: 403 }
-            );
-        }
-
         // Create a service role client for admin operations
         const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
@@ -44,21 +36,8 @@ export async function DELETE(req: NextRequest) {
             );
         }
 
-        // Delete the user profile first (if it exists)
-        try {
-            await supabase
-                .from("user_profiles")
-                .delete()
-                .eq("id", user.id);
-        } catch (profileError) {
-            // Profile might not exist, which is fine
-            console.log(`Profile cleanup note: ${profileError instanceof Error ? profileError.message : 'Unknown error'}`);
-        }
-
-        // Delete the user account
-        const { error: deleteError } = await supabase.auth.admin.deleteUser(
-            user.id
-        );
+        // Delete the user
+        const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id);
 
         if (deleteError) {
             return NextResponse.json(
@@ -68,11 +47,11 @@ export async function DELETE(req: NextRequest) {
         }
 
         return NextResponse.json({
-            message: "Test user cleaned up successfully",
+            message: "User deleted successfully",
             user: { id: user.id, email: user.email }
         });
     } catch (error) {
-        console.error("Cleanup user error:", error);
+        console.error("Delete user error:", error);
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

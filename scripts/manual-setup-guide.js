@@ -107,14 +107,14 @@ function showManualSetupGuide() {
 }
 
 function getProjectId() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const url = process.env.SUPABASE_URL;
     if (url) {
         const match = url.match(/https:\/\/[^.]+\.supabase\.co/);
         if (match) {
             return match[0].split('.')[0].replace('https://', '');
         }
     }
-    return 'your-project-id';
+    return process.env.SUPABASE_PROJECT_ID;
 }
 
 showManualSetupGuide(); 
