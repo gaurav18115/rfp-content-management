@@ -1,105 +1,234 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# RFP Contract Management System
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+A comprehensive, full-stack RFP (Request for Proposal) contract management system built with modern technologies and AI-powered productivity tools.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+![Next.js](https://img.shields.io/badge/Next.js-15.4.6-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Supabase](https://img.shields.io/badge/Supabase-2.54.0-green)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0-blue)
+![pnpm](https://img.shields.io/badge/pnpm-8.0.0-orange)
 
-## Features
+## 🎯 Project Overview
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+This system demonstrates the ability to create production-ready applications using modern technologies and AI tools for productivity. It provides a complete solution for managing the entire RFP lifecycle from creation to approval.
 
-## Demo
+## ✨ Core Features
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+### 1. User Management & Authentication
 
-## Deploy to Vercel
+- [x] User registration with role selection (Buyer/Supplier)
+- [x] JWT-based authentication via Supabase
+- [x] Role-based access control (RBAC)
+- [x] Secure session management
 
-Vercel deployment will guide you through creating a Supabase account and project.
+### 2. RFP Lifecycle Management
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+- [ ] Buyers can create and publish RFPs
+- [ ] Suppliers can browse available RFPs and submit responses
+- [ ] Buyers can review responses and approve/reject them
+- [ ] Document status tracking: Draft → Published → Response Submitted → Under Review → Approved/Rejected
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### 3. Document Management
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+- [ ] File upload capabilities for RFP documents and responses
+- [ ] Document indexing and full-text search
+- [ ] Version control for document updates
+- [ ] Secure document storage and access control
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+### 4. Email Notifications
 
-## Clone and run locally
+- [ ] Automated emails when RFP status changes
+- [ ] Notifications to suppliers when new RFPs are published
+- [ ] Alerts to buyers when responses are submitted
+- [ ] Email templates and delivery tracking
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+### 5. Dashboard & UI
 
-2. Create a Next.js app using the Supabase Starter template npx command
+- [x] Role-specific dashboards
+- [x] Responsive, modern design with Tailwind CSS
+- [x] Real-time status updates
+- [x] Mobile-first responsive design
+
+## 🚀 Tech Stack
+
+- **Frontend**: Next.js 15.4.6 with App Router
+- **Backend**: Supabase (Database, Auth, Storage, Real-time)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Package Manager**: pnpm
+- **Authentication**: Supabase Auth with JWT
+- **Database**: PostgreSQL (via Supabase)
+- **File Storage**: Supabase Storage
+- **Real-time**: Supabase Realtime
+
+## 📋 Development Tracker
+
+### Phase 1: Foundation & Authentication ✅
+
+- [x] Project setup with Next.js and Supabase
+- [x] Database schema design
+- [x] User authentication system
+- [x] Role-based access control
+- [x] Basic UI components and layout
+- [x] Environment configuration
+
+### Phase 2: Core RFP Management 🚧
+
+- [ ] Database tables for RFPs, responses, and documents
+- [ ] RFP creation and editing forms
+- [ ] RFP listing and search functionality
+- [ ] Document upload and storage
+- [ ] Basic CRUD operations for RFPs
+
+### Phase 3: User Workflows & Notifications 📋
+
+- [ ] Buyer dashboard for RFP management
+- [ ] Supplier dashboard for RFP browsing
+- [ ] Response submission system
+- [ ] Status tracking and updates
+- [ ] Email notification system
+
+### Phase 4: Advanced Features & Polish 📋
+
+- [ ] Document version control
+- [ ] Advanced search and filtering
+- [ ] Reporting and analytics
+- [ ] Performance optimization
+- [ ] Testing and bug fixes
+
+### Phase 5: Deployment & Production 📋
+
+- [ ] Production environment setup
+- [ ] Performance monitoring
+- [ ] Security audit
+- [ ] Documentation completion
+- [ ] User training materials
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm package manager
+- Supabase account and project
+
+### Installation
+
+1. **Clone the repository**
 
    ```bash
-   npx create-next-app --example with-supabase with-supabase-app
+   git clone <repository-url>
+   cd rfp-content-management
    ```
+
+2. **Install dependencies**
 
    ```bash
-   yarn create next-app --example with-supabase with-supabase-app
+   pnpm install
    ```
+
+3. **Environment Setup**
 
    ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
+   cp .env.example .env.local
    ```
 
-3. Use `cd` to change into the app's directory
+   Update `.env.local` with your Supabase credentials:
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Run the development server**
 
    ```bash
-   cd with-supabase-app
+   pnpm run dev
    ```
 
-4. Rename `.env.example` to `.env.local` and update the following:
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
+## 📊 Database Schema
 
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+### Core Tables
 
-5. You can now run the Next.js local development server:
+- `users` - User accounts and profiles
+- `rfps` - RFP documents and metadata
+- `rfp_responses` - Supplier responses to RFPs
+- `documents` - File storage and metadata
+- `notifications` - System notifications and emails
+- `audit_logs` - Activity tracking and history
 
-   ```bash
-   npm run dev
-   ```
+### Relationships
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+- Users have roles (Buyer/Supplier)
+- Buyers create RFPs
+- Suppliers submit responses to RFPs
+- Documents are linked to RFPs and responses
+- Notifications track all system events
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+## 🔧 Available Scripts
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+- `pnpm run dev` - Start development server
+- `pnpm run build` - Build for production
+- `pnpm run start` - Start production server
+- `pnpm run lint` - Run ESLint
+- `pnpm run type-check` - Run TypeScript type checking
 
-## Feedback and issues
+## 🧪 Testing
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+```bash
+# Run tests
+pnpm run test
 
-## More Supabase examples
+# Run tests in watch mode
+pnpm run test:watch
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+# Run tests with coverage
+pnpm run test:coverage
+```
+
+## 📦 Deployment
+
+### Vercel (Recommended)
+
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables
+3. Deploy automatically on push to main branch
+
+### Manual Deployment
+
+1. Build the application: `pnpm run build`
+2. Start the production server: `pnpm run start`
+3. Configure your hosting provider
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Documentation**: [Project Wiki](link-to-wiki)
+- **Issues**: [GitHub Issues](link-to-issues)
+- **Discussions**: [GitHub Discussions](link-to-discussions)
+
+## 🎉 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/)
+- Powered by [Supabase](https://supabase.com/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Components from [shadcn/ui](https://ui.shadcn.com/)
+
+---
+
+**Status**: 🚧 In Development | **Last Updated**: December 2024 | **Version**: 1.0.0-alpha
