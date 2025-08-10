@@ -3,11 +3,15 @@ import { DashboardStats } from "@/components/dashboard-stats";
 import { DashboardCharts } from "@/components/dashboard-charts";
 import { RecentActivity } from "@/components/recent-activity";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { EmailConfirmationHandler } from "@/components/email-confirmation-handler";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col">
+      {/* Email Confirmation Handler - This will process confirmation codes */}
+      <EmailConfirmationHandler />
+
       {/* Navigation */}
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
         <div className="w-full max-w-7xl flex justify-between items-center p-3 px-5 text-sm">

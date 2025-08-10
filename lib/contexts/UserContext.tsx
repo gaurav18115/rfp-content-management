@@ -61,20 +61,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let mounted = true;
 
-        // Get initial session
-        const getInitialSession = async () => {
+        // Get initial user data
+        const getInitialUser = async () => {
             try {
-                const { session } = await authApi.getSession();
+                const { user } = await authApi.getUser();
 
                 if (mounted) {
-                    setUser(session?.user ?? null);
-                    if (session?.user) {
+                    setUser(user ?? null);
+                    if (user) {
                         await fetchProfile();
                     }
                 }
             } catch (err) {
                 if (mounted) {
-                    setError(err instanceof Error ? err.message : "Failed to get session");
+                    setError(err instanceof Error ? err.message : "Failed to get user");
                 }
             } finally {
                 if (mounted) {
@@ -83,26 +83,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
         };
 
-        getInitialSession();
+        getInitialUser();
 
-        // Set up polling for session changes since we can't use real-time subscriptions
+        // Set up less frequent polling for user changes since we can't use real-time subscriptions
         const interval = setInterval(async () => {
             if (mounted) {
                 try {
-                    const { session } = await authApi.getSession();
-                    if (session?.user?.id !== user?.id) {
-                        setUser(session?.user ?? null);
-                        if (session?.user) {
+                    const { user } = await authApi.getUser();
+                    if (user?.id !== user?.id) {
+                        setUser(user ?? null);
+                        if (user) {
                             await fetchProfile();
                         } else {
                             setProfile(null);
                         }
                     }
                 } catch (err) {
-                    console.error("Session check error:", err);
+                    console.error("User check error:", err);
                 }
             }
-        }, 5000); // Check every 5 seconds
+        }, 30000); // Check every 30 seconds instead of 5 seconds
 
         return () => {
             mounted = false;

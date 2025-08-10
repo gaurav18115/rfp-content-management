@@ -25,10 +25,8 @@ export async function apiCall<T = unknown>(
 export interface AuthResponse {
     user: User;
     session: Session;
-}
-
-export interface SessionResponse {
-    session: Session | null;
+    message?: string;
+    requiresConfirmation?: boolean;
 }
 
 export interface UserResponse {
@@ -97,9 +95,6 @@ export const authApi = {
             method: 'POST',
             body: JSON.stringify({ password }),
         }),
-
-    getSession: () =>
-        apiCall<SessionResponse>('/api/auth/session'),
 
     getUser: () =>
         apiCall<UserResponse>('/api/auth/user'),

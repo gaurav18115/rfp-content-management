@@ -14,11 +14,12 @@ export async function POST(req: NextRequest) {
 
         const supabase = await createClient();
 
+        console.log("Signup attempt:", { email, role });
+
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
-                emailRedirectTo: `${req.nextUrl.origin}/auth/confirm`,
                 data: {
                     role: role,
                 },
@@ -26,16 +27,27 @@ export async function POST(req: NextRequest) {
         });
 
         if (error) {
+            console.error("Supabase signup error:", error);
             return NextResponse.json(
                 { error: error.message },
                 { status: 400 }
             );
         }
 
+        // If signup was successful, log the result
+        console.log("Signup successful:", {
+            userId: data.user?.id,
+            emailConfirmed: data.user?.email_confirmed_at,
+            session: !!data.session
+        });
+
         return NextResponse.json({
             user: data.user,
-            session: data.session
+            session: data.session,
+            message: "Account created successfully! You can now sign in.",
+            requiresConfirmation: false
         });
+
     } catch (error) {
         console.error("Signup error:", error);
         return NextResponse.json(

@@ -25,6 +25,7 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("");
   const [role, setRole] = useState<"buyer" | "supplier">("buyer");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -32,6 +33,7 @@ export function SignUpForm({
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccess(null);
 
     if (password !== repeatPassword) {
       setError("Passwords do not match");
@@ -40,8 +42,10 @@ export function SignUpForm({
     }
 
     try {
-      await authApi.signup(email, password, role);
-      // Redirect to success page
+      const response = await authApi.signup(email, password, role);
+
+      // Since we're not requiring email confirmation, redirect immediately
+      setSuccess("Account created successfully! Redirecting...");
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -109,6 +113,7 @@ export function SignUpForm({
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
+              {success && <p className="text-sm text-green-600">{success}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Creating an account..." : "Sign up"}
               </Button>

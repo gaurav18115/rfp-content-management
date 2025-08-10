@@ -5,7 +5,8 @@ export async function GET() {
     try {
         const supabase = await createClient();
 
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Use getUser() instead of getSession() for security
+        const { data: { user }, error } = await supabase.auth.getUser();
 
         if (error) {
             return NextResponse.json(
@@ -14,9 +15,10 @@ export async function GET() {
             );
         }
 
-        return NextResponse.json({ session });
+        // Return user data instead of session for better security
+        return NextResponse.json({ user });
     } catch (error) {
-        console.error("Get session error:", error);
+        console.error("Get user error:", error);
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }
