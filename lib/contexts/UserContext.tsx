@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { authApi, profileApi } from "@/lib/api";
 import { User } from "@supabase/supabase-js";
 
 export type UserProfile = {
@@ -30,24 +30,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const supabase = createClient();
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async () => {
         try {
             setError(null);
-            const { data, error: profileError } = await supabase
-                .from("user_profiles")
-                .select("*")
-                .eq("id", userId)
-                .single();
-
-            if (profileError) {
-                console.error("Profile fetch error:", profileError);
-                // Don't throw error here, just log it
-                return;
-            }
-
-            setProfile(data);
+            const { profile: profileData } = await profileApi.getMe();
+            setProfile(profileData);
         } catch (err) {
             console.error("Profile fetch error:", err);
             // Don't set error state here, just log it
@@ -56,13 +44,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     const refreshProfile = async () => {
         if (user) {
-            await fetchProfile(user.id);
+            await fetchProfile();
         }
     };
 
     const signOut = async () => {
         try {
-            await supabase.auth.signOut();
+            await authApi.logout();
             setUser(null);
             setProfile(null);
         } catch (err) {
@@ -76,13 +64,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // Get initial session
         const getInitialSession = async () => {
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
+                const { session } = await authApi.getSession();
 
                 if (mounted) {
                     setUser(session?.user ?? null);
                     if (session?.user) {
-                        await fetchProfile(session.user.id);
+                        await fetchProfile();
                     }
                 }
             } catch (err) {
@@ -98,25 +85,30 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
         getInitialSession();
 
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                if (mounted) {
-                    setUser(session?.user ?? null);
-                    if (session?.user) {
-                        await fetchProfile(session.user.id);
-                    } else {
-                        setProfile(null);
+        // Set up polling for session changes since we can't use real-time subscriptions
+        const interval = setInterval(async () => {
+            if (mounted) {
+                try {
+                    const { session } = await authApi.getSession();
+                    if (session?.user?.id !== user?.id) {
+                        setUser(session?.user ?? null);
+                        if (session?.user) {
+                            await fetchProfile();
+                        } else {
+                            setProfile(null);
+                        }
                     }
+                } catch (err) {
+                    console.error("Session check error:", err);
                 }
             }
-        );
+        }, 5000); // Check every 5 seconds
 
         return () => {
             mounted = false;
-            subscription.unsubscribe();
+            clearInterval(interval);
         };
-    }, [supabase.auth]);
+    }, [user?.id]);
 
     const value: UserContextType = {
         user,

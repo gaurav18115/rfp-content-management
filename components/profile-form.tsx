@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { profileApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -38,26 +38,16 @@ export function ProfileForm() {
         e.preventDefault();
         if (!profile) return;
 
-        const supabase = createClient();
         setSaving(true);
         setError(null);
         setSuccess(null);
 
         try {
-            const { error: updateError } = await supabase
-                .from("user_profiles")
-                .update({
-                    company_name: formData.company_name,
-                    contact_phone: formData.contact_phone,
-                })
-                .eq("id", profile.id);
-
-            if (updateError) throw updateError;
-
+            await profileApi.update(formData.company_name, formData.contact_phone);
             setSuccess("Profile updated successfully!");
             await refreshProfile();
-        } catch (err: any) {
-            setError(err.message || "Failed to update profile");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Failed to update profile");
         } finally {
             setSaving(false);
         }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { authApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { LogOutIcon, UserIcon, HomeIcon } from "lucide-react";
 
@@ -10,9 +10,14 @@ export function Navigation() {
     const router = useRouter();
 
     const handleLogout = async () => {
-        const supabase = createClient();
-        await supabase.auth.signOut();
-        router.push("/auth/login");
+        try {
+            await authApi.logout();
+            router.push("/auth/login");
+        } catch (error) {
+            console.error("Logout error:", error);
+            // Still redirect even if logout fails
+            router.push("/auth/login");
+        }
     };
 
     return (

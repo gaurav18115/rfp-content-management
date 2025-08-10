@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { authApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,7 +30,6 @@ export function SignUpForm({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
@@ -41,43 +40,7 @@ export function SignUpForm({
     }
 
     try {
-      // Sign up user with metadata including role
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-          data: {
-            role: role, // Store role in user metadata
-          },
-        },
-      });
-
-      if (signUpError) throw signUpError;
-
-      if (data.user) {
-        // Wait a moment for the trigger to create the profile
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Try to verify the profile was created
-        try {
-          const { data: profileData, error: profileError } = await supabase
-            .from("user_profiles")
-            .select("*")
-            .eq("id", data.user.id)
-            .single();
-
-          if (profileError) {
-            console.warn("Profile not found immediately after signup:", profileError);
-            // This is expected if the trigger hasn't run yet
-          } else if (profileData) {
-            console.log("Profile created successfully:", profileData);
-          }
-        } catch (profileErr) {
-          console.warn("Profile verification failed:", profileErr);
-        }
-      }
-
+      await authApi.signup(email, password, role);
       // Redirect to success page
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
