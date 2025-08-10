@@ -13,6 +13,14 @@ export const rfpFormSchema = z.object({
         .min(10, "Description must be at least 10 characters")
         .max(2000, "Description must be less than 2000 characters"),
 
+    company: z
+        .string()
+        .min(1, "Company name is required"),
+
+    location: z
+        .string()
+        .optional(),
+
     requirements: z
         .string()
         .min(1, "Requirements are required")
@@ -53,6 +61,10 @@ export const rfpFormSchema = z.object({
     contact_phone: z
         .string()
         .regex(/^[\+]?[1-9][\d]{0,15}$/, "Invalid phone number format")
+        .optional(),
+
+    additional_information: z
+        .string()
         .optional(),
 
     attachments: z
