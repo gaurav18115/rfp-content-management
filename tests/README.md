@@ -1,34 +1,72 @@
 # Playwright Tests for RFP Content Management
 
-This directory contains focused end-to-end tests for the core signup functionality of the RFP Content Management application using Playwright.
+This directory contains organized end-to-end tests for the RFP Content Management application using Playwright. Tests are organized by feature area and follow strict guidelines for maintainability and focus.
+
+## Test Organization Guidelines
+
+### Directory Structure
+
+All tests must be organized into logical directories by feature area:
+
+- **`auth/`** - Authentication and user management tests
+- **`rfp/`** - RFP creation and management tests  
+- **`demo/`** - Demo account functionality tests
+- **`utils/`** - Test utility functions and helpers
+
+### Test File Rules
+
+Each test file must follow these strict guidelines:
+
+1. **Maximum 2 tests per file** - Keep files focused and maintainable
+2. **Core features only** - Focus on happy flow and essential functionality
+3. **Skip corner cases** - Avoid edge cases and complex scenarios for now
+4. **Single responsibility** - Each file should test one specific feature area
 
 ## Test Structure
 
-### Core Test Files
+### Authentication Tests (`auth/`)
 
-- **`signup.spec.ts`** - Core signup feature tests covering all essential scenarios
-- **`utils/test-helpers.ts`** - Essential test utility functions for signup testing
+- **`signup-form.spec.ts`** - Signup form display and buyer registration (2 tests)
+- **`supplier-signup.spec.ts`** - Supplier registration flow (1 test)
+- **`basic-auth.spec.ts`** - User registration and role-based access (2 tests)
 
-### Test Coverage
+### RFP Management Tests (`rfp/`)
 
-The signup tests cover the core functionality:
+- **`form-display.spec.ts`** - RFP form navigation and field display (2 tests)
+- **`form-submission.spec.ts`** - RFP form submission and success handling (2 tests)
 
-#### Form Display
+### Demo Account Tests (`demo/`)
 
-- ✅ Form renders with all required fields (email, role, password, repeat password)
-- ✅ Submit button is present and functional
+- **`buyer-access.spec.ts`** - Demo buyer login and core features (2 tests)
+- **`supplier-access.spec.ts`** - Demo supplier login and core features (2 tests)
 
-#### User Registration
+### Test Utilities (`utils/`)
 
-- ✅ Buyer user signup flow
-- ✅ Supplier user signup flow
-- ✅ Unique email generation for testing
-- ✅ Successful redirect to confirmation page
+- **`auth-helpers.ts`** - Essential authentication test utility functions
 
-#### Validation
+## Test Coverage
 
-- ✅ Password mismatch validation
-- ✅ Error message display for validation failures
+The tests cover the core functionality with focus on happy flow:
+
+#### Authentication
+
+- ✅ User registration (buyer and supplier roles)
+- ✅ Form display and validation
+- ✅ Successful signup flows
+- ✅ Role-based access control
+
+#### RFP Management
+
+- ✅ Form navigation and field display
+- ✅ Successful form submission
+- ✅ Required field handling
+- ✅ Success message verification
+
+#### Demo Accounts
+
+- ✅ Demo user login flows
+- ✅ Role-specific feature access
+- ✅ Logout functionality
 
 ## Running Tests
 
@@ -54,10 +92,18 @@ The signup tests cover the core functionality:
 npm run test
 ```
 
+#### Run specific test directory
+
+```bash
+npx playwright test tests/auth/
+npx playwright test tests/rfp/
+npx playwright test tests/demo/
+```
+
 #### Run specific test file
 
 ```bash
-npx playwright test signup.spec.ts
+npx playwright test tests/auth/signup-form.spec.ts
 ```
 
 #### Run tests in headed mode (see browser)
@@ -92,35 +138,70 @@ The tests are configured in `playwright.config.ts` with:
 
 ## Test Utilities
 
-The `test-helpers.ts` file provides essential functions:
+The `auth-helpers.ts` file provides essential functions:
 
 - `generateUniqueEmail()` - Creates unique test emails
 - `fillSignupForm()` - Fills out the signup form
 - `submitSignupForm()` - Submits the form
 - `waitForSignupSuccess()` - Waits for signup completion
+- `loginAsBuyer()` - Login as demo buyer
+- `loginAsSupplier()` - Login as demo supplier
+- `logout()` - Logout from current session
 
 ## Writing New Tests
 
-### Basic Test Structure
+### Test File Structure
 
 ```typescript
 import { test, expect } from '@playwright/test';
 
-test.describe('Feature Name', () => {
-  test('should do something', async ({ page }) => {
-    // Test implementation
-  });
+test.describe('Feature Name - Core Features', () => {
+    test.beforeEach(async ({ page }) => {
+        // Setup code
+    });
+
+    test('should do something specific', async ({ page }) => {
+        // Test implementation - focus on core functionality
+    });
+
+    test('should handle another core scenario', async ({ page }) => {
+        // Second test - keep it simple and focused
+    });
 });
 ```
 
-### Using Test Utilities
+### Guidelines for New Tests
+
+1. **Create new directory** if testing a new feature area
+2. **Maximum 2 tests per file** - split into multiple files if needed
+3. **Focus on happy flow** - avoid edge cases and complex scenarios
+4. **Use descriptive test names** that explain the core functionality
+5. **Keep tests simple** - one assertion per test when possible
+6. **Use existing utilities** - leverage helper functions for common operations
+
+### Example: Adding New Feature Tests
 
 ```typescript
-import { generateUniqueEmail, fillSignupForm } from './utils/test-helpers';
+// tests/new-feature/basic-functionality.spec.ts
+test.describe('New Feature - Core Functionality', () => {
+    test('should display new feature correctly', async ({ page }) => {
+        // Test basic display
+    });
 
-test('should test signup', async ({ page }) => {
-  const email = generateUniqueEmail('test');
-  await fillSignupForm(page, { email, role: 'buyer', password: 'test123', repeatPassword: 'test123' });
+    test('should handle basic interaction', async ({ page }) => {
+        // Test basic interaction
+    });
+});
+
+// tests/new-feature/advanced-functionality.spec.ts
+test.describe('New Feature - Advanced Functionality', () => {
+    test('should process user input', async ({ page }) => {
+        // Test input processing
+    });
+
+    test('should show success state', async ({ page }) => {
+        // Test success handling
+    });
 });
 ```
 
@@ -152,3 +233,21 @@ Check the `test-results/` directory for:
 - Check Playwright documentation: <https://playwright.dev/>
 - Review test output and error messages
 - Use debug mode to step through tests
+
+## Maintenance
+
+### Regular Cleanup
+
+- Remove tests that are no longer relevant
+- Split files that exceed 2 tests
+- Consolidate similar test logic into utilities
+- Update this README when adding new test areas
+
+### Code Review Checklist
+
+- [ ] Maximum 2 tests per file
+- [ ] Tests focus on core functionality
+- [ ] No complex edge case testing
+- [ ] Clear, descriptive test names
+- [ ] Proper use of test utilities
+- [ ] Tests are in appropriate directories
