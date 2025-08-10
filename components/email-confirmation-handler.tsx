@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { confirmEmail } from "@/app/actions/auth";
 
 export function EmailConfirmationHandler() {
     const router = useRouter();
@@ -17,27 +17,13 @@ export function EmailConfirmationHandler() {
             console.log("Processing email confirmation with code:", code);
 
             try {
-                const supabase = createClient();
+                const result = await confirmEmail(code);
 
-                // Exchange the code for a session
-                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-                if (error) {
-                    console.error("Error exchanging code for session:", error);
-                    // Redirect to error page
-                    router.push(`/auth/error?error=${encodeURIComponent(error.message)}`);
-                    return;
+                if (result?.error) {
+                    console.error("Error during email confirmation:", result.error);
+                    router.push(`/auth/error?error=${encodeURIComponent(result.error)}`);
                 }
-
-                if (data.session) {
-                    console.log("Email confirmation successful, user is now authenticated");
-
-                    // Redirect to dashboard (you can add role-based logic here later)
-                    router.push("/dashboard");
-                } else {
-                    console.log("No session created, redirecting to login");
-                    router.push("/auth/login");
-                }
+                // If successful, the server action will handle the redirect
             } catch (error) {
                 console.error("Exception during email confirmation:", error);
                 router.push(`/auth/error?error=${encodeURIComponent('Email confirmation failed')}`);
