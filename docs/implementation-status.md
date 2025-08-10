@@ -45,7 +45,7 @@
 
 - **Status**: Schema defined but not yet executed
 - **Issue**: Requires manual execution in Supabase dashboard
-- **Solution**: Follow `DATABASE-SETUP.md` instructions
+- **Solution**: Follow `database-setup.md` instructions
 - **Priority**: HIGH - Required for authentication to work
 
 ### Missing Routes
@@ -189,12 +189,12 @@ scripts/
 
 ## 📚 DOCUMENTATION STATUS
 
-- [x] `README.md` - Project overview
-- [x] `SETUP.md` - Setup instructions
-- [x] `DATABASE-SETUP.md` - Database setup guide
-- [x] `IMPLEMENTATION-STATUS.md` - This status document
-- [x] `docs/database-schema.md` - Database documentation
-- [x] `docs/api-docs.md` - API documentation
+- [x] `readme.md` - Project overview
+- [x] `setup.md` - Setup instructions
+- [x] `database-setup.md` - Database setup guide
+- [x] `implementation-status.md` - This status document
+- [x] `database-schema.md` - Database documentation
+- [x] `api-docs.md` - API documentation
 
 ---
 

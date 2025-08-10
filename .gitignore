@@ -36,6 +36,10 @@ yarn-error.log*
 .env*.local
 .env
 
+# test files
+test-users.json
+TEST-USERS-README.md
+
 # vercel
 .vercel
 
