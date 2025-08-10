@@ -12,37 +12,54 @@ A comprehensive, full-stack RFP (Request for Proposal) contract management syste
 
 This system demonstrates the ability to create production-ready applications using modern technologies and AI tools for productivity. It provides a complete solution for managing the entire RFP lifecycle from creation to approval.
 
-## ✨ Core Features
+**Development Timeline**: 2 hours  
+**Focus**: Core MVP features only  
 
-### 1. User Management & Authentication
+## 📁 Repository Structure
+
+```
+Repository Structure
+├── README.md
+├── frontend/
+├── backend/
+├── docs/
+│   ├── api-docs.md
+│   └── database-schema.md
+└── deployment/
+    └── README.md
+```
+
+## ✨ Core Features (MVP)
+
+### 1. User Management & Authentication ✅
 
 - [x] User registration with role selection (Buyer/Supplier)
 - [x] JWT-based authentication via Supabase
 - [x] Role-based access control (RBAC)
 - [x] Secure session management
 
-### 2. RFP Lifecycle Management
+### 2. RFP Lifecycle Management 🚧
 
 - [ ] Buyers can create and publish RFPs
 - [ ] Suppliers can browse available RFPs and submit responses
 - [ ] Buyers can review responses and approve/reject them
 - [ ] Document status tracking: Draft → Published → Response Submitted → Under Review → Approved/Rejected
 
-### 3. Document Management
+### 3. Document Management 🚧
 
 - [ ] File upload capabilities for RFP documents and responses
 - [ ] Document indexing and full-text search
 - [ ] Version control for document updates
 - [ ] Secure document storage and access control
 
-### 4. Email Notifications
+### 4. Email Notifications 📋
 
 - [ ] Automated emails when RFP status changes
 - [ ] Notifications to suppliers when new RFPs are published
 - [ ] Alerts to buyers when responses are submitted
 - [ ] Email templates and delivery tracking
 
-### 5. Dashboard & UI
+### 5. Dashboard & UI ✅
 
 - [x] Role-specific dashboards
 - [x] Responsive, modern design with Tailwind CSS
@@ -62,9 +79,9 @@ This system demonstrates the ability to create production-ready applications usi
 - **File Storage**: Supabase Storage
 - **Real-time**: Supabase Realtime
 
-## 📋 Development Tracker
+## 📋 Development Phases (2-Hour Timeline)
 
-### Phase 1: Foundation & Authentication ✅
+### Phase 1: Foundation & Authentication ✅ (30 min)
 
 - [x] Project setup with Next.js and Supabase
 - [x] Database schema design
@@ -73,7 +90,7 @@ This system demonstrates the ability to create production-ready applications usi
 - [x] Basic UI components and layout
 - [x] Environment configuration
 
-### Phase 2: Core RFP Management 🚧
+### Phase 2: Core RFP Management 🚧 (60 min)
 
 - [ ] Database tables for RFPs, responses, and documents
 - [ ] RFP creation and editing forms
@@ -81,29 +98,13 @@ This system demonstrates the ability to create production-ready applications usi
 - [ ] Document upload and storage
 - [ ] Basic CRUD operations for RFPs
 
-### Phase 3: User Workflows & Notifications 📋
+### Phase 3: User Workflows & Polish 🚧 (30 min)
 
 - [ ] Buyer dashboard for RFP management
 - [ ] Supplier dashboard for RFP browsing
 - [ ] Response submission system
 - [ ] Status tracking and updates
-- [ ] Email notification system
-
-### Phase 4: Advanced Features & Polish 📋
-
-- [ ] Document version control
-- [ ] Advanced search and filtering
-- [ ] Reporting and analytics
-- [ ] Performance optimization
-- [ ] Testing and bug fixes
-
-### Phase 5: Deployment & Production 📋
-
-- [ ] Production environment setup
-- [ ] Performance monitoring
-- [ ] Security audit
-- [ ] Documentation completion
-- [ ] User training materials
+- [ ] Basic testing and bug fixes
 
 ## 🛠️ Getting Started
 
@@ -150,7 +151,7 @@ This system demonstrates the ability to create production-ready applications usi
 5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 📊 Database Schema
+## 📊 Database Schema (Simplified)
 
 ### Core Tables
 
@@ -158,8 +159,6 @@ This system demonstrates the ability to create production-ready applications usi
 - `rfps` - RFP documents and metadata
 - `rfp_responses` - Supplier responses to RFPs
 - `documents` - File storage and metadata
-- `notifications` - System notifications and emails
-- `audit_logs` - Activity tracking and history
 
 ### Relationships
 
@@ -167,7 +166,6 @@ This system demonstrates the ability to create production-ready applications usi
 - Buyers create RFPs
 - Suppliers submit responses to RFPs
 - Documents are linked to RFPs and responses
-- Notifications track all system events
 
 ## 🔧 Available Scripts
 
@@ -177,26 +175,25 @@ This system demonstrates the ability to create production-ready applications usi
 - `pnpm run lint` - Run ESLint
 - `pnpm run type-check` - Run TypeScript type checking
 
-## 🧪 Testing
+## 📚 Documentation
 
-```bash
-# Run tests
-pnpm run test
-
-# Run tests in watch mode
-pnpm run test:watch
-
-# Run tests with coverage
-pnpm run test:coverage
-```
+- **[API Documentation](docs/api-docs.md)** - Complete API reference
+- **[Database Schema](docs/database-schema.md)** - Database design and relationships
+- **[Deployment Guide](deployment/README.md)** - Quick deployment instructions
 
 ## 📦 Deployment
 
-### Vercel (Recommended)
+### Quick Deploy (5 minutes)
 
-1. Connect your GitHub repository to Vercel
-2. Configure environment variables
-3. Deploy automatically on push to main branch
+1. **Vercel (Recommended)**
+   - Connect GitHub repository
+   - Set environment variables
+   - Deploy automatically
+
+2. **Netlify**
+   - Link repository
+   - Configure build settings
+   - Deploy with one click
 
 ### Manual Deployment
 
@@ -218,7 +215,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- **Documentation**: [Project Wiki](link-to-wiki)
+- **Documentation**: Check the `docs/` directory
 - **Issues**: [GitHub Issues](link-to-issues)
 - **Discussions**: [GitHub Discussions](link-to-discussions)
 
@@ -231,4 +228,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Status**: 🚧 In Development | **Last Updated**: December 2024 | **Version**: 1.0.0-alpha
+**Status**: 🚧 In Development | **Timeline**: 2 Hours | **Focus**: Core MVP Features | **Last Updated**: December 2024 | **Version**: 1.0.0-alpha
