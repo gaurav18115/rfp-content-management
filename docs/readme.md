@@ -205,7 +205,7 @@ Repository Structure
 - **[Database Setup](docs/database-setup.md)** - Database setup guide
 - **[Implementation Status](docs/implementation-status.md)** - Current development status
 - **[Test Users](docs/test-users-readme.md)** - Testing information
-- **[Demo Account Seeding](docs/SEEDING-README.md)** - How to create test accounts
+- **[Demo Account Seeding](docs/seeding-readme.md)** - How to create test accounts
 - **[Deployment Guide](deployment/readme.md)** - Quick deployment instructions
 
 ## 📦 Deployment
