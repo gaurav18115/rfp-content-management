@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     CheckCircle,
     XCircle,
@@ -14,27 +17,38 @@ import {
     Calendar,
     FileText,
     Eye,
-    MessageSquare
+    MessageSquare,
+    Filter,
+    Search,
+    RefreshCw
 } from "lucide-react";
 import { useToast } from "@/components/toast/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { RFPResponse } from "@/types/rfp";
+import Link from "next/link";
+
+interface RFPFilter {
+    id: string;
+    title: string;
+}
 
 export default function ResponsesPage() {
     const { toast } = useToast();
     const [responses, setResponses] = useState<RFPResponse[]>([]);
+    const [filteredResponses, setFilteredResponses] = useState<RFPResponse[]>([]);
+    const [rfpFilters, setRfpFilters] = useState<RFPFilter[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [rejectionReason, setRejectionReason] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
 
-    useEffect(() => {
-        fetchResponses();
-    }, []);
+    // Filter states
+    const [selectedRfp, setSelectedRfp] = useState<string>("all");
+    const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const fetchResponses = async () => {
+    const fetchResponses = useCallback(async () => {
         try {
             setIsLoading(true);
             const response = await fetch('/api/responses');
@@ -44,14 +58,62 @@ export default function ResponsesPage() {
             }
 
             const data = await response.json();
-            setResponses(data.responses || []);
+            const responsesData = data.responses || [];
+            setResponses(responsesData);
+            setFilteredResponses(responsesData);
+
+            // Extract unique RFPs for filtering
+            const rfpMap = new Map<string, string>();
+            responsesData.forEach((r: RFPResponse) => {
+                if (!rfpMap.has(r.rfp_id)) {
+                    rfpMap.set(r.rfp_id, r.rfp_title);
+                }
+            });
+
+            const uniqueRfps = Array.from(rfpMap.entries()).map(([id, title]) => ({
+                id,
+                title: title || 'Unknown RFP'
+            }));
+            setRfpFilters(uniqueRfps);
         } catch (err) {
             console.error('Error fetching responses:', err);
             setError(err instanceof Error ? err.message : 'Failed to fetch responses');
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    // Apply filters whenever responses or filter criteria change
+    useEffect(() => {
+        let filtered = responses;
+
+        // Filter by RFP
+        if (selectedRfp !== "all") {
+            filtered = filtered.filter(r => r.rfp_id === selectedRfp);
+        }
+
+        // Filter by status
+        if (statusFilter !== "all") {
+            filtered = filtered.filter(r => r.status === statusFilter);
+        }
+
+        // Filter by search query
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(r =>
+                r.supplier_name.toLowerCase().includes(query) ||
+                r.supplier_company.toLowerCase().includes(query) ||
+                r.rfp_title.toLowerCase().includes(query) ||
+                r.proposal.toLowerCase().includes(query)
+            );
+        }
+
+        setFilteredResponses(filtered);
+    }, [responses, selectedRfp, statusFilter, searchQuery]);
+
+    useEffect(() => {
+        fetchResponses();
+    }, [fetchResponses]);
 
     const handleApprove = async (responseId: string) => {
         try {
@@ -125,6 +187,12 @@ export default function ResponsesPage() {
         }
     };
 
+    const clearFilters = () => {
+        setSelectedRfp("all");
+        setStatusFilter("all");
+        setSearchQuery("");
+    };
+
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'submitted':
@@ -145,6 +213,10 @@ export default function ResponsesPage() {
             style: 'currency',
             currency: 'USD',
         }).format(amount);
+    };
+
+    const getStatusCount = (status: string) => {
+        return responses.filter(r => r.status === status).length;
     };
 
     if (isLoading) {
@@ -181,7 +253,7 @@ export default function ResponsesPage() {
             </div>
 
             {/* Response Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Responses</CardTitle>
@@ -199,7 +271,7 @@ export default function ResponsesPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {responses.filter(r => r.status === 'submitted' || r.status === 'under_review').length}
+                            {getStatusCount('submitted') + getStatusCount('under_review')}
                         </div>
                     </CardContent>
                 </Card>
@@ -211,7 +283,7 @@ export default function ResponsesPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {responses.filter(r => r.status === 'approved').length}
+                            {getStatusCount('approved')}
                         </div>
                     </CardContent>
                 </Card>
@@ -223,27 +295,132 @@ export default function ResponsesPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {responses.filter(r => r.status === 'rejected').length}
+                            {getStatusCount('rejected')}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Active RFPs</CardTitle>
+                        <FileText className="h-4 w-4 text-purple-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {rfpFilters.length}
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
+            {/* Filters Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Filter className="h-5 w-5" />
+                        Filter Responses
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {/* RFP Filter */}
+                        <div>
+                            <Label htmlFor="rfp-filter">Filter by RFP</Label>
+                            <Select value={selectedRfp} onValueChange={setSelectedRfp}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All RFPs" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All RFPs</SelectItem>
+                                    {rfpFilters.map((rfp) => (
+                                        <SelectItem key={rfp.id} value={rfp.id}>
+                                            {rfp.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Status Filter */}
+                        <div>
+                            <Label htmlFor="status-filter">Filter by Status</Label>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All Statuses" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Statuses</SelectItem>
+                                    <SelectItem value="submitted">Submitted</SelectItem>
+                                    <SelectItem value="under_review">Under Review</SelectItem>
+                                    <SelectItem value="approved">Approved</SelectItem>
+                                    <SelectItem value="rejected">Rejected</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Search Filter */}
+                        <div>
+                            <Label htmlFor="search">Search Responses</Label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="search"
+                                    placeholder="Search suppliers, companies, proposals..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-end gap-2">
+                            <Button variant="outline" onClick={clearFilters} className="flex-1">
+                                Clear Filters
+                            </Button>
+                            <Button variant="outline" onClick={fetchResponses} disabled={isProcessing}>
+                                <RefreshCw className={`h-4 w-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
+                                Refresh
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Responses List */}
             <section>
-                <h2 className="text-2xl font-semibold mb-6">All Responses</h2>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-semibold">
+                        Responses ({filteredResponses.length})
+                    </h2>
+                    {filteredResponses.length !== responses.length && (
+                        <Badge variant="secondary">
+                            Filtered from {responses.length} total
+                        </Badge>
+                    )}
+                </div>
 
-                {responses.length === 0 ? (
+                {filteredResponses.length === 0 ? (
                     <div className="text-center py-12">
                         <MessageSquare size="48" className="mx-auto text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">No Responses Yet</h3>
+                        <h3 className="text-lg font-semibold mb-2">
+                            {responses.length === 0 ? 'No Responses Yet' : 'No Responses Match Filters'}
+                        </h3>
                         <p className="text-muted-foreground">
-                            You haven&apos;t received any responses to your RFPs yet.
+                            {responses.length === 0
+                                ? "You haven't received any responses to your RFPs yet."
+                                : "Try adjusting your search criteria or filters."
+                            }
                         </p>
+                        {responses.length > 0 && (
+                            <Button onClick={clearFilters} className="mt-4">
+                                Clear All Filters
+                            </Button>
+                        )}
                     </div>
                 ) : (
                     <div className="grid gap-6">
-                        {responses.map((response) => (
+                        {filteredResponses.map((response) => (
                             <Card key={response.id} className="hover:shadow-lg transition-shadow">
                                 <CardHeader>
                                     <div className="flex items-start justify-between">
@@ -293,19 +470,29 @@ export default function ResponsesPage() {
                                         </p>
                                     </div>
 
-                                    {response.rejection_reason && (
-                                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                                            <h4 className="font-medium text-red-800 mb-1">Rejection Reason</h4>
-                                            <p className="text-sm text-red-700">{response.rejection_reason}</p>
+                                    {/* Review Metadata */}
+                                    {(response.reviewed_at || response.rejection_reason) && (
+                                        <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                                            <h4 className="font-medium mb-2">Review Details</h4>
+                                            <div className="text-sm text-muted-foreground space-y-1">
+                                                {response.reviewed_at && (
+                                                    <div>Reviewed on: {new Date(response.reviewed_at).toLocaleDateString()}</div>
+                                                )}
+                                                {response.rejection_reason && (
+                                                    <div className="text-red-700">
+                                                        Rejection Reason: {response.rejection_reason}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
 
                                     <div className="flex items-center gap-2">
                                         <Button asChild variant="outline" size="sm">
-                                            <span>
+                                            <Link href={`/dashboard/responses/${response.id}`}>
                                                 <Eye size="16" className="mr-2" />
                                                 View Details
-                                            </span>
+                                            </Link>
                                         </Button>
 
                                         {response.status === 'submitted' || response.status === 'under_review' ? (
@@ -337,14 +524,18 @@ export default function ResponsesPage() {
                                                         </DialogHeader>
                                                         <div className="space-y-4">
                                                             <div>
-                                                                <Label htmlFor="rejection-reason">Rejection Reason</Label>
+                                                                <Label htmlFor="rejection-reason">Rejection Reason *</Label>
                                                                 <Textarea
                                                                     id="rejection-reason"
-                                                                    placeholder="Please provide a reason for rejecting this response..."
+                                                                    placeholder="Please provide a detailed reason for rejecting this response..."
                                                                     value={rejectionReason}
                                                                     onChange={(e) => setRejectionReason(e.target.value)}
                                                                     rows={4}
+                                                                    required
                                                                 />
+                                                                <p className="text-sm text-muted-foreground mt-1">
+                                                                    This reason will be shared with the supplier.
+                                                                </p>
                                                             </div>
                                                             <div className="flex justify-end gap-2">
                                                                 <Button
