@@ -79,6 +79,7 @@ export function RFPFilters({
                         variant="outline"
                         onClick={handleClearFilters}
                         className="flex items-center gap-2"
+                        data-testid="clear-filters-button"
                     >
                         <X className="h-4 w-4" />
                         Clear

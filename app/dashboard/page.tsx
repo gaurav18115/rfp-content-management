@@ -25,7 +25,7 @@ export default async function DashboardPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-6">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="dashboard-heading">Dashboard</h1>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}! Here&apos;s what&apos;s happening with your RFPs.
                             </p>
