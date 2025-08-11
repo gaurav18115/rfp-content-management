@@ -1,13 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+interface RouteParams {
+    params: Promise<{ id: string }>;
+}
+
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: RouteParams
 ) {
     try {
         const supabase = await createClient();
-        const responseId = params.id;
+        const { id: responseId } = await params;
 
         // Get the request body
         const { rejection_reason } = await request.json();
@@ -58,8 +62,12 @@ export async function PUT(
         }
 
         // Verify that the buyer owns the RFP
-        if (response.rfps.created_by !== user.id) {
-            return NextResponse.json({ error: 'Access denied. You can only reject responses to your own RFPs.' }, { status: 403 });
+        if (response.rfps && typeof response.rfps === 'object' && 'created_by' in response.rfps) {
+            if (response.rfps.created_by !== user.id) {
+                return NextResponse.json({ error: 'Access denied. You can only reject responses to your own RFPs.' }, { status: 403 });
+            }
+        } else {
+            return NextResponse.json({ error: 'Invalid RFP data' }, { status: 500 });
         }
 
         // Update the response status to rejected
@@ -78,7 +86,7 @@ export async function PUT(
             return NextResponse.json({ error: 'Failed to reject response' }, { status: 500 });
         }
 
-        return NextResponse.json({ 
+        return NextResponse.json({
             message: 'Response rejected successfully',
             response_id: responseId,
             rejection_reason: rejection_reason.trim()

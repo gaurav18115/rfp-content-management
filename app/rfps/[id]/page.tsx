@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -16,11 +16,7 @@ export default function RfpDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchRfpData();
-    }, [rfpId]);
-
-    const fetchRfpData = async () => {
+    const fetchRfpData = useCallback(async () => {
         try {
             setIsLoading(true);
             setError(null);
@@ -45,7 +41,11 @@ export default function RfpDetailPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [rfpId]);
+
+    useEffect(() => {
+        fetchRfpData();
+    }, [fetchRfpData]);
 
     if (isLoading) {
         return (
