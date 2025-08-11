@@ -78,7 +78,23 @@ export default function CreateRfpPage() {
         console.log('Form data validated successfully:', result.data);
 
         try {
-            // In a real app, you'd send this to your API
+            // Send the RFP data to the API
+            const response = await fetch('/api/rfps', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(result.data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create RFP');
+            }
+
+            const responseData = await response.json();
+            console.log('RFP created successfully:', responseData);
+
             toast({
                 title: "RFP Created Successfully!",
                 description: "Your RFP has been created and is now visible to suppliers.",
@@ -108,10 +124,11 @@ export default function CreateRfpPage() {
                 router.push('/rfps/my');
             }, 1500);
 
-        } catch {
+        } catch (error) {
+            console.error('RFP creation error:', error);
             toast({
                 title: "Error",
-                description: "Failed to create RFP. Please try again.",
+                description: error instanceof Error ? error.message : "Failed to create RFP. Please try again.",
                 variant: "destructive",
             });
         } finally {
