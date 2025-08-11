@@ -52,7 +52,7 @@ export default function RfpsPage() {
             });
 
             if (search) params.append("search", search);
-            if (category) params.append("category", category);
+            if (category && category !== "all") params.append("category", category);
 
             const response = await fetch(`/api/rfps/browse?${params}`);
 
@@ -62,10 +62,12 @@ export default function RfpsPage() {
 
             const data: RFPBrowseResponse = await response.json();
             setRfps(data.rfps);
-            setCategories(data.filters.categories);
+            setCategories(data.filters.categories || []);
             setPagination(data.pagination);
         } catch (err) {
             setError(err instanceof Error ? err.message : "An error occurred");
+            // Set empty categories array to prevent Select component crash
+            setCategories([]);
         } finally {
             setLoading(false);
         }
@@ -81,7 +83,7 @@ export default function RfpsPage() {
     };
 
     const handleCategoryChange = (newCategory: string) => {
-        setCategory(newCategory);
+        setCategory(newCategory === "all" ? "" : newCategory);
         setCurrentPage(1);
     };
 

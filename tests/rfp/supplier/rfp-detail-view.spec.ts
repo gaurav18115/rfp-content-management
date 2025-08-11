@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../utils/auth-helpers';
+import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Detail View', () => {
     test.beforeEach(async ({ page }) => {
         // Login as supplier before each test
-        await loginAsSupplier(page, { waitForDashboard: false });
+        await loginAsSupplier(page, { waitForDashboard: true });
 
         // Navigate to the RFPs page first
         await page.goto('/rfps');
@@ -12,7 +12,6 @@ test.describe('RFP Detail View', () => {
     });
 
     test.afterEach(async ({ page }) => {
-        // Logout after each test
         await logout(page);
     });
 
