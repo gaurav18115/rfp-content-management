@@ -48,6 +48,20 @@ export default function ResponsesPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Handle URL query parameters for direct linking
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rfpParam = urlParams.get('rfp');
+        const statusParam = urlParams.get('status');
+
+        if (rfpParam && rfpParam !== 'all') {
+            setSelectedRfp(rfpParam);
+        }
+        if (statusParam && statusParam !== 'all') {
+            setStatusFilter(statusParam);
+        }
+    }, []);
+
     const fetchResponses = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -246,7 +260,15 @@ export default function ResponsesPage() {
     return (
         <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
             <div className="w-full">
-                <h1 className="text-3xl font-bold mb-2">Review Responses</h1>
+                <div className="flex items-center justify-between mb-2">
+                    <h1 className="text-3xl font-bold">Review Responses</h1>
+                    <Button asChild variant="outline" size="sm">
+                        <Link href="/rfps/my">
+                            <FileText size="16" className="mr-2" />
+                            Back to My RFPs
+                        </Link>
+                    </Button>
+                </div>
                 <p className="text-muted-foreground">
                     Review and manage supplier responses to your RFPs
                 </p>
