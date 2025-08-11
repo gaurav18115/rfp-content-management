@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsBuyer, loginAsSupplier } from '../utils/auth-helpers';
+import { loginAsBuyer, loginAsSupplier } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Role-Based Access Control', () => {
     test('supplier cannot access RFP creation page', async ({ page }) => {

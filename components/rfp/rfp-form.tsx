@@ -125,6 +125,7 @@ export default function RfpForm({ mode, initialData, onSubmit, onCancel, isSubmi
                             <Select
                                 value={formData.category}
                                 onValueChange={(value) => handleSelectChange('category', value)}
+                                data-testid="rfp-category-select-wrapper"
                             >
                                 <SelectTrigger data-testid="rfp-category-select">
                                     <SelectValue placeholder="Select category" />
@@ -189,6 +190,7 @@ export default function RfpForm({ mode, initialData, onSubmit, onCancel, isSubmi
                             <Select
                                 value={formData.budget_range}
                                 onValueChange={(value) => handleSelectChange('budget_range', value)}
+                                data-testid="rfp-budget-range-select-wrapper"
                             >
                                 <SelectTrigger data-testid="rfp-budget-select">
                                     <SelectValue placeholder="Select budget range" />
@@ -272,6 +274,7 @@ export default function RfpForm({ mode, initialData, onSubmit, onCancel, isSubmi
                             <Select
                                 value={formData.priority}
                                 onValueChange={(value) => handleSelectChange('priority', value)}
+                                data-testid="rfp-priority-select-wrapper"
                             >
                                 <SelectTrigger data-testid="rfp-priority-select">
                                     <SelectValue placeholder="Select priority" />
@@ -295,6 +298,7 @@ export default function RfpForm({ mode, initialData, onSubmit, onCancel, isSubmi
                             <Select
                                 value={formData.status}
                                 onValueChange={(value) => handleSelectChange('status', value)}
+                                data-testid="rfp-status-select-wrapper"
                             >
                                 <SelectTrigger data-testid="rfp-status-select">
                                     <SelectValue placeholder="Select status" />

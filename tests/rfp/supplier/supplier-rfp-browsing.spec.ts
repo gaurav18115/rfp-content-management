@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../utils/auth-helpers';
+import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('Supplier RFP Browsing - Smoke Tests', () => {
     test.beforeEach(async ({ page }) => {
@@ -20,10 +20,10 @@ test.describe('Supplier RFP Browsing - Smoke Tests', () => {
     test('should have working search and filters', async ({ page }) => {
         const searchInput = page.getByPlaceholder('Search RFPs by title, description, or company...');
         const categorySelect = page.getByRole('combobox');
-        
+
         await expect(searchInput).toBeVisible();
         await expect(categorySelect).toBeVisible();
-        
+
         await searchInput.fill('test');
         await expect(searchInput).toHaveValue('test');
     });

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../utils/auth-helpers';
+import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Pagination', () => {
     test.beforeEach(async ({ page }) => {
@@ -14,9 +14,9 @@ test.describe('RFP Pagination', () => {
 
     test('should display pagination when multiple pages exist', async ({ page }) => {
         await page.waitForTimeout(2000);
-        
+
         const pagination = page.locator('[data-testid="pagination"]');
-        
+
         if (await pagination.isVisible()) {
             await expect(pagination).toBeVisible();
             await expect(page.getByRole('button', { name: 'Previous' })).toBeVisible();
@@ -26,9 +26,9 @@ test.describe('RFP Pagination', () => {
 
     test('should handle pagination navigation', async ({ page }) => {
         await page.waitForTimeout(2000);
-        
+
         const pagination = page.locator('[data-testid="pagination"]');
-        
+
         if (await pagination.isVisible()) {
             const nextButton = page.getByRole('button', { name: 'Next' });
             if (await nextButton.isEnabled()) {

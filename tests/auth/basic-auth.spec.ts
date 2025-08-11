@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { generateUniqueEmail } from '../utils/auth-helpers';
+import { generateUniqueEmail } from '@/tests/utils/auth-helpers';
 
 test.describe('Basic Authentication - Core Features', () => {
     let buyerEmail: string;

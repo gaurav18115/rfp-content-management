@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../utils/auth-helpers';
+import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Page Structure', () => {
     test.beforeEach(async ({ page }) => {

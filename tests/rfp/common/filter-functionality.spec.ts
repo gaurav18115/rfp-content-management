@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../utils/auth-helpers';
+import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Filter Functionality', () => {
     test.beforeEach(async ({ page }) => {
@@ -23,10 +23,10 @@ test.describe('RFP Filter Functionality', () => {
     test('should handle category filtering', async ({ page }) => {
         const categorySelect = page.getByRole('combobox');
         await categorySelect.click();
-        
+
         const categoryOptions = page.locator('[role="option"]');
         const optionCount = await categoryOptions.count();
-        
+
         if (optionCount > 1) {
             const firstCategory = categoryOptions.nth(1);
             const categoryName = await firstCategory.textContent();

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../utils/auth-helpers';
+import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Search Functionality', () => {
     test.beforeEach(async ({ page }) => {
@@ -24,7 +24,7 @@ test.describe('RFP Search Functionality', () => {
         const searchInput = page.getByPlaceholder('Search RFPs by title, description, or company...');
         await searchInput.fill('technology');
         await page.waitForTimeout(500);
-        
+
         const resultsCount = page.locator('[data-testid="results-count"]');
         if (await resultsCount.isVisible()) {
             await expect(resultsCount).toBeVisible();

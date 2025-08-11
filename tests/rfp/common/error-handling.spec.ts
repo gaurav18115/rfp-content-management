@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../utils/auth-helpers';
+import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Error Handling', () => {
     test.beforeEach(async ({ page }) => {
@@ -20,10 +20,10 @@ test.describe('RFP Error Handling', () => {
                 body: JSON.stringify({ error: 'Internal server error' })
             });
         });
-        
+
         await page.reload();
         await page.waitForTimeout(1000);
-        
+
         const errorMessage = page.locator('[data-testid="error-message"]');
         if (await errorMessage.isVisible()) {
             await expect(errorMessage).toBeVisible();
@@ -34,10 +34,10 @@ test.describe('RFP Error Handling', () => {
         await page.route('/api/rfps/browse**', route => {
             route.abort('timedout');
         });
-        
+
         await page.reload();
         await page.waitForTimeout(2000);
-        
+
         // Check if error state is handled
         const errorState = page.locator('[data-testid="error-message"], [data-testid="timeout-message"]');
         if (await errorState.isVisible()) {

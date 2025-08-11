@@ -37,16 +37,16 @@ test.describe('RFP Form Display - Core Features', () => {
         await page.goto('/rfps/create');
 
         // Check for required fields
-        await expect(page.getByLabel('RFP Title *')).toBeVisible();
-        await expect(page.getByLabel('Category *')).toBeVisible();
+        await expect(page.getByLabel('Title *')).toBeVisible();
+        await expect(page.getByTestId('rfp-category-select')).toBeVisible();
         await expect(page.getByLabel('Description *')).toBeVisible();
         await expect(page.getByLabel('Company Name *')).toBeVisible();
-        await expect(page.getByLabel('Submission Deadline *')).toBeVisible();
+        await expect(page.getByLabel('Deadline *')).toBeVisible();
 
         // Check for optional fields
-        await expect(page.getByLabel('Location')).toBeVisible();
-        await expect(page.getByLabel('Budget Range')).toBeVisible();
-        await expect(page.getByLabel('Requirements & Specifications')).toBeVisible();
-        await expect(page.getByLabel('Additional Information')).toBeVisible();
+        await expect(page.getByLabel('Location (Optional)')).toBeVisible();
+        await expect(page.getByTestId('rfp-budget-select')).toBeVisible();
+        await expect(page.getByLabel('Requirements (Optional)')).toBeVisible();
+        await expect(page.getByLabel('Additional Information (Optional)')).toBeVisible();
     });
 }); 
