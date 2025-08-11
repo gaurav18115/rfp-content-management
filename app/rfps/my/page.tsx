@@ -3,15 +3,18 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Calendar, Building, Plus, Eye, Edit } from "lucide-react";
+import { FileText, Calendar, Building, Plus, Eye, Edit, Globe } from "lucide-react";
 import Link from "next/link";
 import { IRFP, IResponse } from "@/types/rfp";
+import { useToast } from "@/components/toast/use-toast";
 
 export default function MyRfpsPage() {
+    const { toast } = useToast();
     const [myRfps, setMyRfps] = useState<IRFP[]>([]);
     const [myResponses] = useState<IResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [publishingRfpId, setPublishingRfpId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchMyRfps();
@@ -33,6 +36,42 @@ export default function MyRfpsPage() {
             setError(err instanceof Error ? err.message : 'Failed to fetch RFPs');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handlePublishRfp = async (rfpId: string) => {
+        try {
+            setPublishingRfpId(rfpId);
+
+            const response = await fetch(`/api/rfps/${rfpId}/publish`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to publish RFP');
+            }
+
+            toast({
+                title: "RFP Published Successfully!",
+                description: "Your RFP is now visible to suppliers.",
+            });
+
+            // Refresh the RFPs list to show updated status
+            await fetchMyRfps();
+
+        } catch (error) {
+            console.error('RFP publish error:', error);
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to publish RFP. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setPublishingRfpId(null);
         }
     };
 
@@ -118,6 +157,19 @@ export default function MyRfpsPage() {
                                                     View
                                                 </Link>
                                             </Button>
+
+                                            {rfp.status === 'draft' && (
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => handlePublishRfp(rfp.id)}
+                                                    disabled={publishingRfpId === rfp.id}
+                                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                                >
+                                                    <Globe size="16" className="mr-2" />
+                                                    {publishingRfpId === rfp.id ? 'Publishing...' : 'Publish'}
+                                                </Button>
+                                            )}
+
                                             <Button asChild size="sm">
                                                 <Link href={`/rfps/${rfp.id}/edit`}>
                                                     <Edit size="16" className="mr-2" />
