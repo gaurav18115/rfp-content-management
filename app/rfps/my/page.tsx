@@ -7,9 +7,11 @@ import { FileText, Calendar, Building, Plus, Eye, Edit, Globe } from "lucide-rea
 import Link from "next/link";
 import { IRFP, IResponse } from "@/types/rfp";
 import { useToast } from "@/components/toast/use-toast";
+import { useUser } from "@/lib/contexts/UserContext";
 
 export default function MyRfpsPage() {
     const { toast } = useToast();
+    const { profile } = useUser();
     const [myRfps, setMyRfps] = useState<IRFP[]>([]);
     const [myResponses] = useState<IResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -88,12 +90,14 @@ export default function MyRfpsPage() {
             <section>
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-semibold">My RFPs</h2>
-                    <Button asChild>
-                        <Link href="/rfps/create">
-                            <Plus size="16" className="mr-2" />
-                            Create New RFP
-                        </Link>
-                    </Button>
+                    {profile?.role === 'buyer' && (
+                        <Button asChild>
+                            <Link href="/rfps/create">
+                                <Plus size="16" className="mr-2" />
+                                Create New RFP
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {isLoading && (
@@ -189,12 +193,14 @@ export default function MyRfpsPage() {
                                 <p className="text-muted-foreground mb-4">
                                     Start by creating your first RFP to find suppliers and vendors.
                                 </p>
-                                <Button asChild>
-                                    <Link href="/rfps/create">
-                                        <Plus size="16" className="mr-2" />
-                                        Create Your First RFP
-                                    </Link>
-                                </Button>
+                                {profile?.role === 'buyer' && (
+                                    <Button asChild>
+                                        <Link href="/rfps/create">
+                                            <Plus size="16" className="mr-2" />
+                                            Create Your First RFP
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </>

@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-    CheckCircle, 
-    XCircle, 
-    Clock, 
-    User, 
-    Building, 
-    DollarSign, 
+import {
+    CheckCircle,
+    XCircle,
+    Clock,
+    User,
+    Building,
+    DollarSign,
     Calendar,
     FileText,
     Eye,
@@ -27,7 +27,6 @@ export default function ResponsesPage() {
     const [responses, setResponses] = useState<RFPResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedResponse, setSelectedResponse] = useState<RFPResponse | null>(null);
     const [rejectionReason, setRejectionReason] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -39,7 +38,7 @@ export default function ResponsesPage() {
         try {
             setIsLoading(true);
             const response = await fetch('/api/responses');
-            
+
             if (!response.ok) {
                 throw new Error('Failed to fetch responses');
             }
@@ -57,7 +56,7 @@ export default function ResponsesPage() {
     const handleApprove = async (responseId: string) => {
         try {
             setIsProcessing(true);
-            
+
             const response = await fetch(`/api/responses/${responseId}/approve`, {
                 method: 'PUT',
                 headers: {
@@ -92,7 +91,7 @@ export default function ResponsesPage() {
     const handleReject = async (responseId: string, reason: string) => {
         try {
             setIsProcessing(true);
-            
+
             const response = await fetch(`/api/responses/${responseId}/reject`, {
                 method: 'PUT',
                 headers: {
@@ -113,7 +112,6 @@ export default function ResponsesPage() {
 
             // Reset form and refresh
             setRejectionReason("");
-            setSelectedResponse(null);
             await fetchResponses();
         } catch (error) {
             console.error('Rejection error:', error);
@@ -234,13 +232,13 @@ export default function ResponsesPage() {
             {/* Responses List */}
             <section>
                 <h2 className="text-2xl font-semibold mb-6">All Responses</h2>
-                
+
                 {responses.length === 0 ? (
                     <div className="text-center py-12">
                         <MessageSquare size="48" className="mx-auto text-muted-foreground mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No Responses Yet</h3>
                         <p className="text-muted-foreground">
-                            You haven't received any responses to your RFPs yet.
+                            You haven&apos;t received any responses to your RFPs yet.
                         </p>
                     </div>
                 ) : (
@@ -271,7 +269,7 @@ export default function ResponsesPage() {
                                         </div>
                                     </div>
                                 </CardHeader>
-                                
+
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                         <div className="flex items-center gap-2">
@@ -328,7 +326,6 @@ export default function ResponsesPage() {
                                                             size="sm"
                                                             variant="destructive"
                                                             disabled={isProcessing}
-                                                            onClick={() => setSelectedResponse(response)}
                                                         >
                                                             <XCircle size="16" className="mr-2" />
                                                             Reject
@@ -352,10 +349,7 @@ export default function ResponsesPage() {
                                                             <div className="flex justify-end gap-2">
                                                                 <Button
                                                                     variant="outline"
-                                                                    onClick={() => {
-                                                                        setSelectedResponse(null);
-                                                                        setRejectionReason("");
-                                                                    }}
+                                                                    onClick={() => setRejectionReason("")}
                                                                 >
                                                                     Cancel
                                                                 </Button>

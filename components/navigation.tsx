@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { LogOutIcon, UserIcon, HomeIcon, MessageSquare } from "lucide-react";
+import { useUser } from "@/lib/contexts/UserContext";
 
 export function Navigation() {
     const router = useRouter();
+    const { profile } = useUser();
 
     const handleLogout = async () => {
         try {
@@ -36,10 +38,12 @@ export function Navigation() {
                         <Link href="/rfps/my" className="text-sm hover:text-foreground/80">
                             My RFPs
                         </Link>
-                        <Link href="/dashboard/responses" className="text-sm hover:text-foreground/80 flex items-center gap-1">
-                            <MessageSquare size="14" />
-                            Review Responses
-                        </Link>
+                        {profile?.role === "buyer" && (
+                            <Link href="/dashboard/responses" className="text-sm hover:text-foreground/80 flex items-center gap-1">
+                                <MessageSquare size="14" />
+                                Review Responses
+                            </Link>
+                        )}
                     </div>
                 </div>
 

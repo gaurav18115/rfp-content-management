@@ -243,17 +243,19 @@ export default async function DashboardPage() {
                                 </Card>
                             </Link>
 
-                            <Link href="/dashboard/responses">
-                                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                                    <CardContent className="p-6 text-center">
-                                        <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                                            <MessageSquare className="h-6 w-6 text-purple-600" />
-                                        </div>
-                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Review Responses</h3>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Evaluate supplier proposals</p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
+                            {profile?.role === 'buyer' && (
+                                <Link href="/dashboard/responses">
+                                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                                        <CardContent className="p-6 text-center">
+                                            <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                                                <MessageSquare className="h-6 w-6 text-purple-600" />
+                                            </div>
+                                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Review Responses</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Evaluate supplier proposals</p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            )}
 
                             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                                 <CardContent className="p-6 text-center">
