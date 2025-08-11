@@ -269,11 +269,12 @@ export default function RespondToRFPPage() {
                         <CardTitle>Your Proposal</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-4" data-testid="rfp-response-form">
                             <div className="space-y-2">
                                 <Label htmlFor="proposal">Proposal Details *</Label>
                                 <Textarea
                                     id="proposal"
+                                    data-testid="proposal-field"
                                     placeholder="Describe your approach, methodology, and how you'll deliver this project..."
                                     value={formData.proposal}
                                     onChange={(e) => handleInputChange('proposal', e.target.value)}
@@ -286,6 +287,7 @@ export default function RespondToRFPPage() {
                                 <Label htmlFor="budget">Proposed Budget *</Label>
                                 <Input
                                     id="budget"
+                                    data-testid="budget-field"
                                     type="text"
                                     placeholder="e.g., $50,000 or $45,000 - $55,000"
                                     value={formData.budget}
@@ -298,6 +300,7 @@ export default function RespondToRFPPage() {
                                 <Label htmlFor="timeline">Project Timeline *</Label>
                                 <Input
                                     id="timeline"
+                                    data-testid="timeline-field"
                                     type="text"
                                     placeholder="e.g., 3 months, 6-8 weeks"
                                     value={formData.timeline}
@@ -310,6 +313,7 @@ export default function RespondToRFPPage() {
                                 <Label htmlFor="experience">Relevant Experience</Label>
                                 <Textarea
                                     id="experience"
+                                    data-testid="experience-field"
                                     placeholder="Describe your relevant experience and past projects..."
                                     value={formData.experience}
                                     onChange={(e) => handleInputChange('experience', e.target.value)}
@@ -319,6 +323,7 @@ export default function RespondToRFPPage() {
 
                             <Button
                                 type="submit"
+                                data-testid="submit-response-btn"
                                 className="w-full"
                                 disabled={submitting}
                             >

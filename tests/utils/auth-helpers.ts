@@ -66,8 +66,8 @@ export const DEMO_ACCOUNTS = {
         company: 'Demo Buyer Corp'
     },
     supplier: {
-        email: 'supplier@test.com',
-        password: 'password123',
+        email: 'testsupplier2@test.com',
+        password: 'SecurePassword123!',
         role: 'supplier',
         company: 'Demo Supplier Inc'
     }
