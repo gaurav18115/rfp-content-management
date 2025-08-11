@@ -52,6 +52,7 @@ export function RFPFilters({
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                         className="pl-10"
+                        data-testid="search-input"
                     />
                 </div>
 

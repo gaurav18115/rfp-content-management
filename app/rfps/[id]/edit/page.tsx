@@ -139,6 +139,45 @@ export default function EditRfpPage() {
         router.push('/rfps/my');
     };
 
+    const handlePublish = async () => {
+        if (!rfpData) return;
+
+        try {
+            const response = await fetch(`/api/rfps/${rfpId}/publish`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to publish RFP');
+            }
+
+            const responseData = await response.json();
+            console.log('RFP published successfully:', responseData);
+
+            toast({
+                title: "RFP Published Successfully!",
+                description: "Your RFP is now visible to suppliers.",
+            });
+
+            // Redirect to My RFPs page after a short delay
+            setTimeout(() => {
+                router.push('/rfps/my');
+            }, 1500);
+
+        } catch (error) {
+            console.error('RFP publish error:', error);
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to publish RFP. Please try again.",
+                variant: "destructive",
+            });
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
@@ -218,7 +257,9 @@ export default function EditRfpPage() {
                 initialData={initialFormData}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
+                onPublish={handlePublish}
                 isSubmitting={isSubmitting}
+                canPublish={rfpData.status === 'draft'}
             />
         </div>
     );

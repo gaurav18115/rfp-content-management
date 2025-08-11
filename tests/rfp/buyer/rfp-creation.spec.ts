@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginAsBuyer } from '@/tests/utils/auth-helpers';
 
-test.describe('RFP Creation End-to-End', () => {
+test.describe('RFP Creation', () => {
     test('demo buyer can create RFP and it appears in database', async ({ page }) => {
         // Login as demo buyer
         await loginAsBuyer(page);

@@ -16,10 +16,12 @@ interface RfpFormProps {
     initialData?: Partial<RfpFormData>;
     onSubmit: (data: RfpFormData) => Promise<void>;
     onCancel: () => void;
+    onPublish?: () => Promise<void>;
     isSubmitting: boolean;
+    canPublish?: boolean;
 }
 
-export default function RfpForm({ mode, initialData, onSubmit, onCancel, isSubmitting }: RfpFormProps) {
+export default function RfpForm({ mode, initialData, onSubmit, onCancel, onPublish, isSubmitting, canPublish = false }: RfpFormProps) {
     const { toast } = useToast();
     const [formData, setFormData] = useState<RfpFormData>({
         title: "",
@@ -376,6 +378,19 @@ export default function RfpForm({ mode, initialData, onSubmit, onCancel, isSubmi
                         <Button type="submit" className="flex-1" disabled={isSubmitting}>
                             {isSubmitting ? (mode === 'create' ? "Creating..." : "Updating...") : (mode === 'create' ? "Create RFP" : "Update RFP")}
                         </Button>
+
+                        {mode === 'edit' && canPublish && onPublish && (
+                            <Button
+                                type="button"
+                                variant="default"
+                                onClick={onPublish}
+                                disabled={isSubmitting}
+                                className="bg-green-600 hover:bg-green-700"
+                            >
+                                Publish RFP
+                            </Button>
+                        )}
+
                         <Button type="button" variant="outline" onClick={onCancel}>
                             Cancel
                         </Button>
