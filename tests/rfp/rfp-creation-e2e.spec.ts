@@ -18,22 +18,22 @@ test.describe('RFP Creation End-to-End', () => {
         await page.getByTestId('rfp-category-select').click();
         await page.getByRole('option', { name: 'Technology' }).click();
 
-        await page.getByTestId('rfp-description-textarea').fill('We need a modern website with e-commerce functionality, user authentication, and admin dashboard.');
+        await page.getByTestId('rfp-description-input').fill('We need a modern website with e-commerce functionality, user authentication, and admin dashboard.');
         await page.getByTestId('rfp-company-input').fill('Demo Buyer Corp');
         await page.getByTestId('rfp-location-input').fill('Remote');
 
         await page.getByTestId('rfp-budget-select').click();
-        await page.getByRole('option', { name: '$10,000 - $50,000' }).click();
+        await page.getByRole('option', { name: '$10,000 - $25,000' }).click();
 
         // Set deadline to tomorrow
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowString = tomorrow.toISOString().split('T')[0];
+        const tomorrowString = tomorrow.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
         await page.getByTestId('rfp-deadline-input').fill(tomorrowString);
 
         // Fill optional fields
-        await page.getByTestId('rfp-requirements-textarea').fill('React frontend, Node.js backend, PostgreSQL database, responsive design');
-        await page.getByTestId('rfp-additional-info-textarea').fill('Project must be completed within 3 months. Prefer team with similar project experience.');
+        await page.getByTestId('rfp-requirements-input').fill('React frontend, Node.js backend, PostgreSQL database, responsive design');
+        await page.getByTestId('rfp-additional-info-input').fill('Project must be completed within 3 months. Prefer team with similar project experience.');
 
         await page.getByTestId('rfp-priority-select').click();
         await page.getByRole('option', { name: 'High' }).click();
@@ -45,7 +45,7 @@ test.describe('RFP Creation End-to-End', () => {
         await page.getByTestId('rfp-contact-phone-input').fill('+1-555-123-4567');
 
         // Submit the form
-        await page.getByTestId('create-rfp-submit-button').click();
+        await page.getByRole('button', { name: 'Create RFP' }).click();
 
         // Wait for either success or error message
         await expect(page.locator('[role="status"]').first()).toBeVisible();
