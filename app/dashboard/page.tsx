@@ -104,6 +104,14 @@ export default async function DashboardPage() {
                                     </Button>
                                 </Link>
                             )}
+                            {profile?.role === 'buyer' && (
+                                <Link href="/dashboard/responses">
+                                    <Button className="w-full" variant="outline">
+                                        <MessageSquare className="h-4 w-4 mr-2" />
+                                        Review Responses
+                                    </Button>
+                                </Link>
+                            )}
                             {profile?.role === 'supplier' && (
                                 <Link href="/rfps">
                                     <Button className="w-full" variant="default" data-testid="browse-rfps">
@@ -211,35 +219,43 @@ export default async function DashboardPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                                <CardContent className="p-6 text-center">
-                                    <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                                        <Plus className="h-6 w-6 text-blue-600" />
-                                    </div>
-                                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Create RFP</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">Start a new request for proposal</p>
-                                </CardContent>
-                            </Card>
+                            <Link href="/rfps/create">
+                                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                                    <CardContent className="p-6 text-center">
+                                        <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                                            <Plus className="h-6 w-6 text-blue-600" />
+                                        </div>
+                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Create RFP</h3>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">Start a new request for proposal</p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
 
-                            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                                <CardContent className="p-6 text-center">
-                                    <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                                        <FileText className="h-6 w-6 text-green-600" />
-                                    </div>
-                                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Manage RFPs</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">View and edit existing RFPs</p>
-                                </CardContent>
-                            </Card>
+                            <Link href="/rfps/my">
+                                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                                    <CardContent className="p-6 text-center">
+                                        <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                                            <FileText className="h-6 w-6 text-green-600" />
+                                        </div>
+                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Manage RFPs</h3>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">View and edit existing RFPs</p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
 
-                            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                                <CardContent className="p-6 text-center">
-                                    <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                                        <MessageSquare className="h-6 w-6 text-purple-600" />
-                                    </div>
-                                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Review Responses</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">Evaluate supplier proposals</p>
-                                </CardContent>
-                            </Card>
+                            {profile?.role === 'buyer' && (
+                                <Link href="/dashboard/responses">
+                                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                                        <CardContent className="p-6 text-center">
+                                            <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                                                <MessageSquare className="h-6 w-6 text-purple-600" />
+                                            </div>
+                                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Review Responses</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Evaluate supplier proposals</p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            )}
 
                             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                                 <CardContent className="p-6 text-center">
@@ -256,4 +272,4 @@ export default async function DashboardPage() {
             </main>
         </div>
     );
-} 
+}
