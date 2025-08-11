@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Loader2, AlertCircle, ArrowLeft, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,35 +45,35 @@ export default function RespondToRFPPage() {
         experience: ''
     });
 
-    useEffect(() => {
-        const fetchRFP = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+    const fetchRFP = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
 
-                const response = await fetch(`/api/rfps/${rfpId}/view`);
+            const response = await fetch(`/api/rfps/${rfpId}/view`);
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('RFP not found');
-                    }
-                    throw new Error('Failed to fetch RFP');
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('RFP not found');
                 }
-
-                const data: RFPDetailResponse = await response.json();
-                setRfp(data.rfp);
-            } catch (err) {
-                console.error('Error fetching RFP:', err);
-                setError(err instanceof Error ? err.message : 'An error occurred');
-            } finally {
-                setLoading(false);
+                throw new Error('Failed to fetch RFP');
             }
-        };
 
+            const data: RFPDetailResponse = await response.json();
+            setRfp(data.rfp);
+        } catch (err) {
+            console.error('Error fetching RFP:', err);
+            setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+            setLoading(false);
+        }
+    }, [rfpId]);
+
+    useEffect(() => {
         if (rfpId) {
             fetchRFP();
         }
-    }, [rfpId]);
+    }, [fetchRFP, rfpId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

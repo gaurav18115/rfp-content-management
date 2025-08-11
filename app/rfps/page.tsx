@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FileText, Loader2, AlertCircle } from "lucide-react";
 import { RFPCard } from "@/components/rfp/rfp-card";
 import { RFPFilters } from "@/components/rfp/rfp-filters";
@@ -41,41 +41,42 @@ export default function RfpsPage() {
         totalPages: 1
     });
 
-    const fetchRFPs = async () => {
+    const fetchRFPs = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
 
             const params = new URLSearchParams({
                 page: currentPage.toString(),
-                limit: "10"
+                limit: "10",
+                ...(search && { search }),
+                ...(category && { category }),
             });
-
-            if (search) params.append("search", search);
-            if (category && category !== "all") params.append("category", category);
 
             const response = await fetch(`/api/rfps/browse?${params}`);
 
             if (!response.ok) {
-                throw new Error("Failed to fetch RFPs");
+                throw new Error('Failed to fetch RFPs');
             }
 
             const data: RFPBrowseResponse = await response.json();
             setRfps(data.rfps);
-            setCategories(data.filters.categories || []);
             setPagination(data.pagination);
+            setCategories(data.filters.categories);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred");
-            // Set empty categories array to prevent Select component crash
+            console.error('Error fetching RFPs:', err);
+            setError(err instanceof Error ? err.message : 'An error occurred');
+            setRfps([]);
+            setPagination({ page: 1, limit: 10, total: 0, totalPages: 0 });
             setCategories([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, search, category]);
 
     useEffect(() => {
         fetchRFPs();
-    }, [currentPage, search, category]);
+    }, [fetchRFPs]);
 
     const handleSearchChange = (newSearch: string) => {
         setSearch(newSearch);
