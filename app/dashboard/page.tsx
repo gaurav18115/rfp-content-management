@@ -33,7 +33,7 @@ export default async function DashboardPage() {
                         <div className="flex items-center space-x-4">
                             {profile?.role === 'buyer' && (
                                 <Button asChild>
-                                    <Link href="/rfps/create">
+                                    <Link href="/rfps/create" data-testid="create-rfp-header">
                                         <Plus className="h-4 w-4 mr-2" />
                                         Create RFP
                                     </Link>
@@ -99,14 +99,14 @@ export default async function DashboardPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {profile?.role === 'buyer' && (
                                 <Link href="/rfps/create">
-                                    <Button className="w-full" variant="default">
+                                    <Button className="w-full" variant="default" data-testid="create-rfp-quick">
                                         Create New RFP
                                     </Button>
                                 </Link>
                             )}
                             {profile?.role === 'supplier' && (
                                 <Link href="/rfps">
-                                    <Button className="w-full" variant="default">
+                                    <Button className="w-full" variant="default" data-testid="browse-rfps">
                                         Browse RFPs
                                     </Button>
                                 </Link>

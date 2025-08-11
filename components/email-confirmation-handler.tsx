@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { confirmEmail } from "@/app/actions/auth";
 
 export function EmailConfirmationHandler() {
     const router = useRouter();
@@ -11,22 +10,35 @@ export function EmailConfirmationHandler() {
     useEffect(() => {
         const handleEmailConfirmation = async () => {
             const code = searchParams.get("code");
+            const email = searchParams.get("email");
 
-            if (!code) return;
+            // If we have email confirmation parameters, process them directly
+            if (code && email) {
+                console.log("Processing email confirmation with code:", code, "and email:", email);
 
-            console.log("Processing email confirmation with code:", code);
+                try {
+                    const response = await fetch('/api/auth/confirm-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, code }),
+                    });
 
-            try {
-                const result = await confirmEmail(code);
+                    const result = await response.json();
 
-                if (result?.error) {
-                    console.error("Error during email confirmation:", result.error);
-                    router.push(`/auth/error?error=${encodeURIComponent(result.error)}`);
+                    if (response.ok) {
+                        console.log("Email confirmed successfully:", result);
+                        // Redirect to success page or dashboard
+                        router.push('/auth/sign-up-success');
+                    } else {
+                        console.error("Error during email confirmation:", result.error);
+                        router.push(`/auth/error?error=${encodeURIComponent(result.error || 'Email confirmation failed')}`);
+                    }
+                } catch (error) {
+                    console.error("Exception during email confirmation:", error);
+                    router.push(`/auth/error?error=${encodeURIComponent('Email confirmation failed')}`);
                 }
-                // If successful, the server action will handle the redirect
-            } catch (error) {
-                console.error("Exception during email confirmation:", error);
-                router.push(`/auth/error?error=${encodeURIComponent('Email confirmation failed')}`);
             }
         };
 
@@ -35,4 +47,4 @@ export function EmailConfirmationHandler() {
 
     // This component doesn't render anything visible
     return null;
-} 
+}

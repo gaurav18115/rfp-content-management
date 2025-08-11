@@ -22,60 +22,7 @@ export function RecentActivity() {
 
     useEffect(() => {
         // Simulate fetching recent activities
-        const mockActivities: ActivityItem[] = [
-            {
-                id: '1',
-                type: 'rfp_created',
-                title: 'New RFP Created',
-                description: 'Software Development Services for E-commerce Platform',
-                timestamp: '2 hours ago',
-                user: 'John Smith',
-                status: 'draft',
-                priority: 'high'
-            },
-            {
-                id: '2',
-                type: 'response_submitted',
-                title: 'Response Submitted',
-                description: 'Proposal for Cloud Infrastructure Project',
-                timestamp: '4 hours ago',
-                user: 'Tech Solutions Inc.',
-                status: 'submitted',
-                priority: 'medium'
-            },
-            {
-                id: '3',
-                type: 'rfp_published',
-                title: 'RFP Published',
-                description: 'Marketing Campaign Services',
-                timestamp: '1 day ago',
-                user: 'Marketing Team',
-                status: 'published',
-                priority: 'medium'
-            },
-            {
-                id: '4',
-                type: 'response_approved',
-                title: 'Response Approved',
-                description: 'Web Design Services Proposal',
-                timestamp: '2 days ago',
-                user: 'Creative Agency',
-                status: 'approved',
-                priority: 'high'
-            },
-            {
-                id: '5',
-                type: 'user_registered',
-                title: 'New User Registration',
-                description: 'Supplier account created',
-                timestamp: '3 days ago',
-                user: 'Innovation Corp',
-                status: 'active',
-                priority: 'low'
-            }
-        ];
-
-        setActivities(mockActivities);
+        setActivities([]);
         setLoading(false);
     }, []);
 
