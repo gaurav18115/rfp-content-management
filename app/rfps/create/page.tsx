@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -8,11 +8,53 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/toast/use-toast";
 import RfpForm from "@/components/rfp/rfp-form";
 import { type RfpFormData } from "@/lib/validations/rfp";
+import { useUser } from "@/lib/contexts/UserContext";
 
 export default function CreateRfpPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { profile, loading } = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Check if user is a buyer
+    useEffect(() => {
+        if (!loading && profile && profile.role !== 'buyer') {
+            toast({
+                title: "Access Denied",
+                description: "Only buyers can create RFPs. Please contact support if you believe this is an error.",
+                variant: "destructive",
+            });
+            router.push('/dashboard');
+        }
+    }, [profile, loading, router, toast]);
+
+    // Show loading state while checking user role
+    if (loading) {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show access denied if user is not a buyer
+    if (profile && profile.role !== 'buyer') {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+                    <p className="text-muted-foreground mb-4">
+                        Only buyers can create RFPs. Please contact support if you believe this is an error.
+                    </p>
+                    <Button asChild>
+                        <Link href="/dashboard">Back to Dashboard</Link>
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     const handleSubmit = async (formData: RfpFormData) => {
         setIsSubmitting(true);

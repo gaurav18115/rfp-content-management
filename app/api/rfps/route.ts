@@ -16,6 +16,27 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Check if user has buyer role
+        const { data: profile, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError || !profile) {
+            return NextResponse.json(
+                { error: "User profile not found" },
+                { status: 404 }
+            );
+        }
+
+        if (profile.role !== 'buyer') {
+            return NextResponse.json(
+                { error: "Only buyers can create RFPs" },
+                { status: 403 }
+            );
+        }
+
         // Parse and validate the request body
         const body = await req.json();
         const validationResult = rfpFormSchema.safeParse(body);
