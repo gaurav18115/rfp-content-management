@@ -8,7 +8,7 @@ test.describe('RFP Detail View', () => {
 
         // Navigate to the RFPs page first
         await page.goto('/rfps');
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
     });
 
     test.afterEach(async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
 
             // Click view details button
             await viewDetailsButton.click();
@@ -48,26 +48,24 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
             // Wait for page to load
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Check if RFP title is displayed
-            const title = page.locator('h1');
-            await expect(title).toBeVisible();
+            await expect(page.getByTestId('rfp-title')).toBeVisible();
 
             // Check if description is displayed
-            const description = page.locator('p').first();
-            await expect(description).toBeVisible();
+            await expect(page.getByTestId('rfp-description')).toBeVisible();
 
             // Check if key information section is present
-            await expect(page.getByText('Key Information')).toBeVisible();
+            await expect(page.getByTestId('rfp-key-information-title')).toBeVisible();
 
             // Check if action buttons are present
-            await expect(page.getByRole('button', { name: 'Submit Proposal' })).toBeVisible();
-            await expect(page.getByRole('button', { name: '← Back to RFPs' })).toBeVisible();
+            await expect(page.getByTestId('rfp-submit-proposal-button')).toBeVisible();
+            await expect(page.getByTestId('rfp-back-button')).toBeVisible();
         } else {
             test.skip();
         }
@@ -82,18 +80,16 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Check if priority badge is displayed
-            const priorityBadge = page.locator('text=/.*Priority/');
-            await expect(priorityBadge).toBeVisible();
+            await expect(page.getByTestId('rfp-priority-badge')).toBeVisible();
 
             // Check if category badge is displayed
-            const categoryBadge = page.locator('text=/.*/').filter({ hasText: /^(?!.*Priority).*$/ });
-            await expect(categoryBadge).toBeVisible();
+            await expect(page.getByTestId('rfp-category-badge')).toBeVisible();
         } else {
             test.skip();
         }
@@ -108,17 +104,16 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Check if deadline information is displayed
-            await expect(page.getByText('Deadline:')).toBeVisible();
+            await expect(page.getByTestId('rfp-deadline-section')).toBeVisible();
 
             // Check if days until deadline is displayed
-            const deadlineText = page.locator('text=/.*days|Today|Tomorrow|Expired/');
-            await expect(deadlineText).toBeVisible();
+            await expect(page.locator('[data-testid="rfp-deadline-section"] p:last-child')).toBeVisible();
         } else {
             test.skip();
         }
@@ -133,18 +128,18 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Check for either expired warning or submit button
-            const expiredWarning = page.getByText('This RFP has expired');
-            const submitButton = page.getByRole('button', { name: 'Submit Proposal' });
+            const expiredWarning = page.getByTestId('rfp-expired-warning');
+            const submitButton = page.getByTestId('rfp-submit-proposal-button');
 
             if (await expiredWarning.isVisible()) {
                 await expect(expiredWarning).toBeVisible();
-                await expect(page.getByRole('button', { name: 'RFP Expired' })).toBeVisible();
+                await expect(page.getByTestId('rfp-expired-button')).toBeVisible();
             } else {
                 await expect(submitButton).toBeVisible();
             }
@@ -162,16 +157,16 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Check if company information is displayed
-            await expect(page.getByText('Key Information')).toBeVisible();
+            await expect(page.getByTestId('rfp-key-information-title')).toBeVisible();
 
             // Check if contact information section exists (if contact details are available)
-            const contactSection = page.getByText('Contact Information');
+            const contactSection = page.getByTestId('rfp-contact-information-title');
             if (await contactSection.isVisible()) {
                 await expect(contactSection).toBeVisible();
             }
@@ -189,13 +184,13 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Check if tags section exists (if tags are available)
-            const tagsSection = page.getByText('Tags');
+            const tagsSection = page.getByTestId('rfp-tags-title');
             if (await tagsSection.isVisible()) {
                 await expect(tagsSection).toBeVisible();
             }
@@ -213,18 +208,18 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Click back button
-            const backButton = page.getByRole('button', { name: '← Back to RFPs' });
+            const backButton = page.getByTestId('rfp-back-button');
             await backButton.click();
 
             // Check if returned to listing page
             await expect(page).toHaveURL('/rfps');
-            await expect(page.getByRole('heading', { name: 'Available RFPs' })).toBeVisible();
+            await expect(page.locator('h1:has-text("Available RFPs")')).toBeVisible();
         } else {
             test.skip();
         }
@@ -239,10 +234,10 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Set mobile viewport
             await page.setViewportSize({ width: 375, height: 667 });
@@ -252,7 +247,7 @@ test.describe('RFP Detail View', () => {
             await expect(grid).toBeVisible();
 
             // Check if action buttons are properly sized for mobile
-            const submitButton = page.getByRole('button', { name: 'Submit Proposal' });
+            const submitButton = page.getByTestId('rfp-submit-proposal-button');
             if (await submitButton.isVisible()) {
                 await expect(submitButton).toBeVisible();
             }
@@ -270,10 +265,10 @@ test.describe('RFP Detail View', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
 
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
 
             // Test tab navigation through interactive elements
             await page.keyboard.press('Tab');

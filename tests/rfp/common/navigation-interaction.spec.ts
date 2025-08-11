@@ -3,9 +3,9 @@ import { loginAsSupplier, logout } from '@/tests/utils/auth-helpers';
 
 test.describe('RFP Navigation and Interaction', () => {
     test.beforeEach(async ({ page }) => {
-        await loginAsSupplier(page, { waitForDashboard: false });
+        await loginAsSupplier(page, { waitForDashboard: true });
         await page.goto('/rfps');
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
     });
 
     test.afterEach(async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe('RFP Navigation and Interaction', () => {
 
         if (cardCount > 0) {
             const firstCard = rfpCards.first();
-            const viewDetailsButton = firstCard.getByRole('button', { name: 'View Details' });
+            const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
             await viewDetailsButton.click();
             await expect(page).toHaveURL(/\/rfps\/[^\/]+$/);
         }
