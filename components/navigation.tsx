@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { LogOutIcon, UserIcon, HomeIcon } from "lucide-react";
+import { LogOutIcon, UserIcon, HomeIcon, MessageSquare } from "lucide-react";
 
 export function Navigation() {
     const router = useRouter();
@@ -36,6 +36,10 @@ export function Navigation() {
                         <Link href="/rfps/my" className="text-sm hover:text-foreground/80">
                             My RFPs
                         </Link>
+                        <Link href="/dashboard/responses" className="text-sm hover:text-foreground/80 flex items-center gap-1">
+                            <MessageSquare size="14" />
+                            Review Responses
+                        </Link>
                     </div>
                 </div>
 
@@ -55,4 +59,4 @@ export function Navigation() {
             </div>
         </nav>
     );
-} 
+}

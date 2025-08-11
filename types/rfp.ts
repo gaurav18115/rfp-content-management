@@ -29,4 +29,22 @@ export interface IResponse {
     submittedAt: string;
     status: string;
     category: string;
-} 
+}
+
+export interface RFPResponse {
+    id: string;
+    rfp_id: string;
+    rfp_title: string;
+    supplier_id: string;
+    supplier_name: string;
+    supplier_company: string;
+    proposal: string;
+    budget: number;
+    timeline: string;
+    experience: string;
+    status: 'submitted' | 'under_review' | 'approved' | 'rejected';
+    submitted_at: string;
+    reviewed_at?: string;
+    reviewed_by?: string;
+    rejection_reason?: string;
+}
