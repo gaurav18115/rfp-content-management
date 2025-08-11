@@ -2,42 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Calendar, Building, Plus, Eye, Edit } from "lucide-react";
 import Link from "next/link";
+import { IRFP, IResponse } from "@/types/rfp";
 
 export default function MyRfpsPage() {
     // This is a placeholder - you'll need to fetch actual user RFP data
-    const myRfps = [
-        {
-            id: "1",
-            title: "Website Redesign Project",
-            company: "My Company",
-            location: "Remote",
-            deadline: "2024-03-01",
-            status: "draft",
-            responses: 0,
-            category: "Web Design"
-        },
-        {
-            id: "2",
-            title: "Marketing Campaign Services",
-            company: "My Company",
-            location: "Remote",
-            deadline: "2024-03-15",
-            status: "published",
-            responses: 3,
-            category: "Marketing"
-        }
-    ];
-
-    const myResponses = [
-        {
-            id: "1",
-            rfpTitle: "Software Development Services",
-            company: "TechCorp Inc.",
-            submittedAt: "2024-01-15",
-            status: "submitted",
-            category: "Technology"
-        }
-    ];
+    const myRfps: IRFP[] = [];
+    const myResponses: IResponse[] = [];
 
     return (
         <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">

@@ -9,11 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/toast/use-toast";
 import { rfpFormSchema } from "@/lib/validations/rfp";
 
 export default function CreateRfpPage() {
     const { toast } = useToast();
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
@@ -50,9 +52,12 @@ export default function CreateRfpPage() {
         setIsSubmitting(true);
         setErrors({}); // Clear previous errors
 
+        console.log('Submitting form data:', formData);
+
         const result = rfpFormSchema.safeParse(formData);
 
         if (!result.success) {
+            console.log('Validation errors:', result.error.issues);
             const newErrors: { [key: string]: string } = {};
             result.error.issues.forEach(issue => {
                 const pathKey = issue.path[0] as string;
@@ -64,13 +69,13 @@ export default function CreateRfpPage() {
             setIsSubmitting(false);
             toast({
                 title: "Validation Error",
-                description: "Please correct the errors in the form.",
+                description: `Please correct the following errors: ${Object.values(newErrors).join(', ')}`,
                 variant: "destructive",
             });
             return;
         }
 
-        console.log('Form data:', result.data);
+        console.log('Form data validated successfully:', result.data);
 
         try {
             // In a real app, you'd send this to your API
@@ -97,6 +102,11 @@ export default function CreateRfpPage() {
                 attachments: [],
                 tags: [],
             });
+
+            // Redirect to My RFPs page after a short delay
+            setTimeout(() => {
+                router.push('/rfps/my');
+            }, 1500);
 
         } catch {
             toast({
@@ -132,6 +142,9 @@ export default function CreateRfpPage() {
                         <FileText size="20" />
                         RFP Details
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                        Fields marked with * are required. All other fields are optional and can be filled in later.
+                    </p>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -218,7 +231,7 @@ export default function CreateRfpPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="location">Location</Label>
+                                <Label htmlFor="location">Location (Optional)</Label>
                                 <Input
                                     id="location"
                                     name="location"
@@ -237,7 +250,7 @@ export default function CreateRfpPage() {
 
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="budget">Budget Range</Label>
+                                <Label htmlFor="budget">Budget Range *</Label>
                                 <Select
                                     name="budget_range"
                                     onValueChange={(value) => handleSelectChange("budget_range", value)}
@@ -281,7 +294,7 @@ export default function CreateRfpPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="requirements">Requirements & Specifications</Label>
+                            <Label htmlFor="requirements">Requirements & Specifications (Optional)</Label>
                             <Textarea
                                 id="requirements"
                                 name="requirements"
@@ -299,7 +312,7 @@ export default function CreateRfpPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="additional">Additional Information</Label>
+                            <Label htmlFor="additional">Additional Information (Optional)</Label>
                             <Textarea
                                 id="additional"
                                 name="additional_information"
@@ -314,6 +327,92 @@ export default function CreateRfpPage() {
                                     {errors.additional_information}
                                 </p>
                             )}
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="priority">Priority (Optional)</Label>
+                                <Select
+                                    name="priority"
+                                    onValueChange={(value) => handleSelectChange("priority", value)}
+                                    value={formData.priority}
+                                >
+                                    <SelectTrigger data-testid="rfp-priority-select">
+                                        <SelectValue placeholder="Select priority" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                        <SelectItem value="urgent">Urgent</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.priority && (
+                                    <p className="text-red-500 text-sm" data-testid="rfp-priority-error">
+                                        {errors.priority}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="status">Status (Optional)</Label>
+                                <Select
+                                    name="status"
+                                    onValueChange={(value) => handleSelectChange("status", value)}
+                                    value={formData.status}
+                                >
+                                    <SelectTrigger data-testid="rfp-status-select">
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="draft">Draft</SelectItem>
+                                        <SelectItem value="published">Published</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.status && (
+                                    <p className="text-red-500 text-sm" data-testid="rfp-status-error">
+                                        {errors.status}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="contact_email">Contact Email (Optional)</Label>
+                                <Input
+                                    id="contact_email"
+                                    name="contact_email"
+                                    type="email"
+                                    placeholder="contact@company.com"
+                                    value={formData.contact_email}
+                                    onChange={handleChange}
+                                    data-testid="rfp-contact-email-input"
+                                />
+                                {errors.contact_email && (
+                                    <p className="text-red-500 text-sm" data-testid="rfp-contact-email-error">
+                                        {errors.contact_email}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="contact_phone">Contact Phone (Optional)</Label>
+                                <Input
+                                    id="contact_phone"
+                                    name="contact_phone"
+                                    type="tel"
+                                    placeholder="+1 (555) 123-4567"
+                                    value={formData.contact_phone}
+                                    onChange={handleChange}
+                                    data-testid="rfp-contact-phone-input"
+                                />
+                                {errors.contact_phone && (
+                                    <p className="text-red-500 text-sm" data-testid="rfp-contact-phone-error">
+                                        {errors.contact_phone}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex gap-4 pt-4">

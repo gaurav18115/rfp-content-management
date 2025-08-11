@@ -23,9 +23,7 @@ export const rfpFormSchema = z.object({
 
     requirements: z
         .string()
-        .min(1, "Requirements are required")
-        .min(20, "Requirements must be at least 20 characters")
-        .max(5000, "Requirements must be less than 5000 characters"),
+        .optional(), // Made optional since it's not always needed
 
     budget_range: z
         .string()
@@ -56,12 +54,13 @@ export const rfpFormSchema = z.object({
     contact_email: z
         .string()
         .email("Invalid email format")
-        .optional(),
+        .optional()
+        .or(z.literal("")), // Allow empty string
 
     contact_phone: z
         .string()
-        .regex(/^[\+]?[1-9][\d]{0,15}$/, "Invalid phone number format")
-        .optional(),
+        .optional()
+        .or(z.literal("")), // Allow empty string
 
     additional_information: z
         .string()
