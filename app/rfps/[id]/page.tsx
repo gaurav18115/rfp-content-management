@@ -1,67 +1,58 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { RFPDetail } from "@/components/rfp/rfp-detail";
 import { IRFP } from "@/types/rfp";
-import Link from "next/link";
 
-interface RFPDetailResponse {
-    rfp: IRFP & {
-        user_profiles?: {
-            company_name?: string;
-            first_name?: string;
-            last_name?: string;
-        };
-    };
-}
-
-export default function RFPDetailPage() {
+export default function RfpDetailPage() {
     const params = useParams();
     const rfpId = params.id as string;
 
-    const [rfp, setRfp] = useState<RFPDetailResponse['rfp'] | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [rfp, setRfp] = useState<IRFP | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchRFP = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+    const fetchRfpData = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
 
-                const response = await fetch(`/api/rfps/${rfpId}/view`);
+            const response = await fetch(`/api/rfps/${rfpId}/view`);
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('RFP not found');
-                    }
-                    throw new Error('Failed to fetch RFP');
+            if (!response.ok) {
+                if (response.status === 404) {
+                    setError('RFP not found');
+                } else {
+                    const errorData = await response.json();
+                    setError(errorData.error || 'Failed to fetch RFP');
                 }
-
-                const data: RFPDetailResponse = await response.json();
-                setRfp(data.rfp);
-            } catch (err) {
-                console.error('Error fetching RFP:', err);
-                setError(err instanceof Error ? err.message : 'An error occurred');
-            } finally {
-                setLoading(false);
+                return;
             }
-        };
 
-        if (rfpId) {
-            fetchRFP();
+            const data = await response.json();
+            setRfp(data.rfp);
+        } catch (error) {
+            console.error('Error fetching RFP:', error);
+            setError('Failed to load RFP data');
+        } finally {
+            setIsLoading(false);
         }
     }, [rfpId]);
 
-    if (loading) {
+    useEffect(() => {
+        fetchRfpData();
+    }, [fetchRfpData]);
+
+    if (isLoading) {
         return (
-            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
                 <div className="text-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p>Loading RFP details...</p>
+                    <p className="text-muted-foreground">Loading RFP details...</p>
                 </div>
             </div>
         );
@@ -69,15 +60,35 @@ export default function RFPDetailPage() {
 
     if (error) {
         return (
-            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
                 <div className="text-center py-12">
-                    <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Error Loading RFP</h3>
+                    <p className="text-muted-foreground mb-4">{error}</p>
+                    <div className="flex gap-2 justify-center">
+                        <Button onClick={fetchRfpData} variant="outline">
+                            Try Again
+                        </Button>
+                        <Button asChild>
+                            <Link href="/rfps">
+                                <ArrowLeft size="16" className="mr-2" />
+                                Back to RFPs
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!rfp) {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">RFP Not Found</h3>
                     <p className="text-muted-foreground mb-4">
-                        {error === 'RFP not found'
-                            ? 'The RFP you&apos;re looking for doesn&apos;t exist or is not published.'
-                            : error
-                        }
+                        The RFP you&apos;re looking for doesn&apos;t exist or may have been removed.
                     </p>
                     <Button asChild>
                         <Link href="/rfps">
@@ -90,13 +101,15 @@ export default function RFPDetailPage() {
         );
     }
 
-    if (!rfp) {
+    // Check if RFP is published and accessible
+    if (rfp.status !== 'published') {
         return (
-            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
                 <div className="text-center py-12">
-                    <h3 className="text-lg font-semibold mb-2">RFP Not Found</h3>
+                    <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">RFP Not Available</h3>
                     <p className="text-muted-foreground mb-4">
-                        The RFP you&apos;re looking for doesn&apos;t exist.
+                        This RFP is not currently published and cannot be viewed.
                     </p>
                     <Button asChild>
                         <Link href="/rfps">
@@ -110,7 +123,18 @@ export default function RFPDetailPage() {
     }
 
     return (
-        <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+        <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
+            {/* Back Navigation */}
+            <div className="flex items-center gap-4">
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/rfps">
+                        <ArrowLeft size="16" className="mr-2" />
+                        Back to RFPs
+                    </Link>
+                </Button>
+            </div>
+
+            {/* RFP Detail Component */}
             <RFPDetail rfp={rfp} />
         </div>
     );

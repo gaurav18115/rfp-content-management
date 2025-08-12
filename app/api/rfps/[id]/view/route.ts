@@ -9,7 +9,7 @@ export async function GET(
         const supabase = await createClient();
         const { id: rfpId } = await params;
 
-        // Get RFP data (only published RFPs are publicly viewable)
+        // Get RFP data with user profile information
         const { data: rfp, error: fetchError } = await supabase
             .from('rfps')
             .select(`
@@ -38,6 +38,14 @@ export async function GET(
             );
         }
 
+        // Only return published RFPs
+        if (rfp.status !== 'published') {
+            return NextResponse.json(
+                { error: "RFP not available" },
+                { status: 404 }
+            );
+        }
+
         return NextResponse.json({ rfp });
 
     } catch (error) {
@@ -47,4 +55,4 @@ export async function GET(
             { status: 500 }
         );
     }
-} 
+}

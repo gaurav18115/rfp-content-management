@@ -1,94 +1,95 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
-import { Loader2, AlertCircle, ArrowLeft, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/toast/use-toast";
-import { IRFP } from "@/types/rfp";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Loader2, AlertCircle, Send } from "lucide-react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useToast } from "@/components/toast/use-toast";
+import { useUser } from "@/lib/contexts/UserContext";
+import { IRFP } from "@/types/rfp";
 
-interface RFPDetailResponse {
-    rfp: IRFP & {
-        user_profiles?: {
-            company_name?: string;
-            first_name?: string;
-            last_name?: string;
-        };
-    };
-}
-
-interface ProposalFormData {
-    proposal: string;
-    budget: string;
-    timeline: string;
-    experience: string;
-}
-
-export default function RespondToRFPPage() {
+export default function RespondToRfpPage() {
+    const { toast } = useToast();
+    const router = useRouter();
     const params = useParams();
     const rfpId = params.id as string;
-    const { toast } = useToast();
+    const { profile, loading: userLoading } = useUser();
 
-    const [rfp, setRfp] = useState<RFPDetailResponse['rfp'] | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
+    const [rfp, setRfp] = useState<IRFP | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [formData, setFormData] = useState<ProposalFormData>({
+    const [formData, setFormData] = useState({
         proposal: '',
         budget: '',
         timeline: '',
         experience: ''
     });
 
-    const fetchRFP = useCallback(async () => {
+    const fetchRfpData = useCallback(async () => {
         try {
-            setLoading(true);
+            setIsLoading(true);
             setError(null);
 
             const response = await fetch(`/api/rfps/${rfpId}/view`);
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    throw new Error('RFP not found');
+                    setError('RFP not found');
+                } else {
+                    const errorData = await response.json();
+                    setError(errorData.error || 'Failed to fetch RFP');
                 }
-                throw new Error('Failed to fetch RFP');
+                return;
             }
 
-            const data: RFPDetailResponse = await response.json();
+            const data = await response.json();
             setRfp(data.rfp);
-        } catch (err) {
-            console.error('Error fetching RFP:', err);
-            setError(err instanceof Error ? err.message : 'An error occurred');
+        } catch (error) {
+            console.error('Error fetching RFP:', error);
+            setError('Failed to load RFP data');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     }, [rfpId]);
 
     useEffect(() => {
-        if (rfpId) {
-            fetchRFP();
+        if (!userLoading) {
+            fetchRfpData();
         }
-    }, [fetchRFP, rfpId]);
+    }, [userLoading, fetchRfpData]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!rfp) return;
+        if (!profile || profile.role !== 'supplier') {
+            toast({
+                title: "Access Denied",
+                description: "Only suppliers can submit proposals.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         try {
-            setSubmitting(true);
+            setIsSubmitting(true);
 
             const response = await fetch(`/api/rfps/${rfpId}/responses`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    proposal: formData.proposal,
+                    budget: parseFloat(formData.budget),
+                    timeline: formData.timeline,
+                    experience: formData.experience
+                }),
             });
 
             if (!response.ok) {
@@ -97,37 +98,69 @@ export default function RespondToRFPPage() {
             }
 
             toast({
-                title: "Proposal Submitted",
-                description: "Your proposal has been submitted successfully!",
+                title: "Proposal Submitted Successfully!",
+                description: "Your proposal has been submitted and is under review.",
             });
 
-            // Redirect to the RFP detail page
-            window.location.href = `/rfps/${rfpId}`;
-        } catch (err) {
-            console.error('Error submitting proposal:', err);
+            // Redirect to RFPs page after a short delay
+            setTimeout(() => {
+                router.push('/rfps');
+            }, 1500);
+
+        } catch (error) {
+            console.error('Proposal submission error:', error);
             toast({
-                title: "Submission Failed",
-                description: err instanceof Error ? err.message : 'An error occurred while submitting your proposal',
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to submit proposal. Please try again.",
                 variant: "destructive",
             });
         } finally {
-            setSubmitting(false);
+            setIsSubmitting(false);
         }
     };
 
-    const handleInputChange = (field: keyof ProposalFormData, value: string) => {
+    const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
         }));
     };
 
-    if (loading) {
+    // Check if user is a supplier
+    if (userLoading) {
         return (
             <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
                 <div className="text-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p>Loading RFP details...</p>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (profile && profile.role !== 'supplier') {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+                    <p className="text-muted-foreground mb-4">
+                        Only suppliers can submit proposals to RFPs.
+                    </p>
+                    <Button asChild>
+                        <Link href="/dashboard">Back to Dashboard</Link>
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading RFP details...</p>
                 </div>
             </div>
         );
@@ -137,20 +170,20 @@ export default function RespondToRFPPage() {
         return (
             <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
                 <div className="text-center py-12">
-                    <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Error Loading RFP</h3>
-                    <p className="text-muted-foreground mb-4">
-                        {error === 'RFP not found'
-                            ? 'The RFP you&apos;re looking for doesn&apos;t exist or is not published.'
-                            : error
-                        }
-                    </p>
-                    <Button asChild>
-                        <Link href="/rfps">
-                            <ArrowLeft size="16" className="mr-2" />
-                            Back to RFPs
-                        </Link>
-                    </Button>
+                    <p className="text-muted-foreground mb-4">{error}</p>
+                    <div className="flex gap-2 justify-center">
+                        <Button onClick={fetchRfpData} variant="outline">
+                            Try Again
+                        </Button>
+                        <Button asChild>
+                            <Link href="/rfps">
+                                <ArrowLeft size="16" className="mr-2" />
+                                Back to RFPs
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
         );
@@ -160,9 +193,10 @@ export default function RespondToRFPPage() {
         return (
             <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
                 <div className="text-center py-12">
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">RFP Not Found</h3>
                     <p className="text-muted-foreground mb-4">
-                        The RFP you&apos;re looking for doesn&apos;t exist.
+                        The RFP you&apos;re looking for doesn&apos;t exist or may have been removed.
                     </p>
                     <Button asChild>
                         <Link href="/rfps">
@@ -175,22 +209,42 @@ export default function RespondToRFPPage() {
         );
     }
 
-    // Check if RFP is expired
-    const isExpired = new Date(rfp.deadline) < new Date();
+    // Check if RFP is published and accessible
+    if (rfp.status !== 'published') {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">RFP Not Available</h3>
+                    <p className="text-muted-foreground mb-4">
+                        This RFP is not currently published and cannot accept proposals.
+                    </p>
+                    <Button asChild>
+                        <Link href="/rfps">
+                            <ArrowLeft size="16" className="mr-2" />
+                            Back to RFPs
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
+    // Check if RFP has expired
+    const isExpired = new Date(rfp.deadline) < new Date();
     if (isExpired) {
         return (
             <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
                 <div className="text-center py-12">
-                    <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">RFP Expired</h3>
                     <p className="text-muted-foreground mb-4">
                         This RFP has expired and is no longer accepting proposals.
                     </p>
                     <Button asChild>
-                        <Link href={`/rfps/${rfpId}`}>
+                        <Link href="/rfps">
                             <ArrowLeft size="16" className="mr-2" />
-                            Back to RFP Details
+                            Back to RFPs
                         </Link>
                     </Button>
                 </div>
@@ -200,146 +254,133 @@ export default function RespondToRFPPage() {
 
     return (
         <div className="flex-1 w-full flex flex-col gap-8 max-w-4xl mx-auto p-6">
-            {/* Header */}
-            <div className="w-full">
-                <div className="flex items-center gap-4 mb-4">
-                    <Button asChild variant="ghost" size="sm">
-                        <Link href={`/rfps/${rfpId}`}>
-                            <ArrowLeft size="16" className="mr-2" />
-                            Back to RFP Details
-                        </Link>
-                    </Button>
-                </div>
-                <h1 className="text-3xl font-bold mb-2">Submit Proposal</h1>
-                <p className="text-muted-foreground">
-                    Submit your proposal for: {rfp.title}
-                </p>
+            {/* Back Navigation */}
+            <div className="flex items-center gap-4">
+                <Button asChild variant="outline" size="sm">
+                    <Link href={`/rfps/${rfpId}`}>
+                        <ArrowLeft size="16" className="mr-2" />
+                        Back to RFP
+                    </Link>
+                </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* RFP Summary */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileText className="h-5 w-5" />
-                            RFP Summary
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+            {/* RFP Summary */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-2xl">{rfp.title}</CardTitle>
+                    <p className="text-muted-foreground">{rfp.description}</p>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                            <h3 className="font-semibold mb-2">{rfp.title}</h3>
-                            <p className="text-sm text-muted-foreground">{rfp.description}</p>
+                            <span className="font-medium">Company:</span> {rfp.company}
+                        </div>
+                        <div>
+                            <span className="font-medium">Category:</span> {rfp.category}
+                        </div>
+                        <div>
+                            <span className="font-medium">Budget Range:</span> {rfp.budget_range}
+                        </div>
+                        <div>
+                            <span className="font-medium">Deadline:</span> {new Date(rfp.deadline).toLocaleDateString()}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Proposal Form */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Submit Your Proposal</CardTitle>
+                    <p className="text-muted-foreground">
+                        Please provide detailed information about your proposal for this RFP.
+                    </p>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <Label htmlFor="proposal">Proposal Details *</Label>
+                            <Textarea
+                                id="proposal"
+                                placeholder="Describe your approach, methodology, and how you plan to deliver this project..."
+                                value={formData.proposal}
+                                onChange={(e) => handleInputChange('proposal', e.target.value)}
+                                required
+                                rows={6}
+                                className="mt-2"
+                            />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <span className="font-medium">Company:</span>
-                                <p className="text-muted-foreground">
-                                    {rfp.user_profiles?.company_name || rfp.company}
-                                </p>
-                            </div>
-                            <div>
-                                <span className="font-medium">Budget:</span>
-                                <p className="text-muted-foreground">{rfp.budget_range}</p>
-                            </div>
-                            <div>
-                                <span className="font-medium">Category:</span>
-                                <p className="text-muted-foreground">{rfp.category}</p>
-                            </div>
-                            <div>
-                                <span className="font-medium">Deadline:</span>
-                                <p className="text-muted-foreground">
-                                    {new Date(rfp.deadline).toLocaleDateString()}
-                                </p>
-                            </div>
-                        </div>
-
-                        {rfp.requirements && (
-                            <div>
-                                <span className="font-medium text-sm">Requirements:</span>
-                                <p className="text-sm text-muted-foreground mt-1">{rfp.requirements}</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Proposal Form */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Your Proposal</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4" data-testid="rfp-response-form">
-                            <div className="space-y-2">
-                                <Label htmlFor="proposal">Proposal Details *</Label>
-                                <Textarea
-                                    id="proposal"
-                                    data-testid="proposal-field"
-                                    placeholder="Describe your approach, methodology, and how you'll deliver this project..."
-                                    value={formData.proposal}
-                                    onChange={(e) => handleInputChange('proposal', e.target.value)}
-                                    required
-                                    rows={6}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="budget">Proposed Budget *</Label>
+                                <Label htmlFor="budget">Proposed Budget ($) *</Label>
                                 <Input
                                     id="budget"
-                                    data-testid="budget-field"
-                                    type="text"
-                                    placeholder="e.g., $50,000 or $45,000 - $55,000"
+                                    type="number"
+                                    placeholder="50000"
                                     value={formData.budget}
                                     onChange={(e) => handleInputChange('budget', e.target.value)}
                                     required
+                                    min="0"
+                                    step="0.01"
+                                    className="mt-2"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="timeline">Project Timeline *</Label>
+                            <div>
+                                <Label htmlFor="timeline">Proposed Timeline *</Label>
                                 <Input
                                     id="timeline"
-                                    data-testid="timeline-field"
-                                    type="text"
-                                    placeholder="e.g., 3 months, 6-8 weeks"
+                                    placeholder="3 months"
                                     value={formData.timeline}
                                     onChange={(e) => handleInputChange('timeline', e.target.value)}
                                     required
+                                    className="mt-2"
                                 />
                             </div>
+                        </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="experience">Relevant Experience</Label>
-                                <Textarea
-                                    id="experience"
-                                    data-testid="experience-field"
-                                    placeholder="Describe your relevant experience and past projects..."
-                                    value={formData.experience}
-                                    onChange={(e) => handleInputChange('experience', e.target.value)}
-                                    rows={4}
-                                />
-                            </div>
+                        <div>
+                            <Label htmlFor="experience">Relevant Experience *</Label>
+                            <Textarea
+                                id="experience"
+                                placeholder="Describe your relevant experience, past projects, and team qualifications..."
+                                value={formData.experience}
+                                onChange={(e) => handleInputChange('experience', e.target.value)}
+                                required
+                                rows={4}
+                                className="mt-2"
+                            />
+                        </div>
 
+                        <div className="flex gap-4 pt-4">
                             <Button
                                 type="submit"
-                                data-testid="submit-response-btn"
-                                className="w-full"
-                                disabled={submitting}
+                                disabled={isSubmitting}
+                                className="flex-1"
                             >
-                                {submitting ? (
+                                {isSubmitting ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <Loader2 size="16" className="mr-2 animate-spin" />
                                         Submitting...
                                     </>
                                 ) : (
-                                    'Submit Proposal'
+                                    <>
+                                        <Send size="16" className="mr-2" />
+                                        Submit Proposal
+                                    </>
                                 )}
                             </Button>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
+
+                            <Button asChild variant="outline" type="button">
+                                <Link href={`/rfps/${rfpId}`}>
+                                    Cancel
+                                </Link>
+                            </Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 } 

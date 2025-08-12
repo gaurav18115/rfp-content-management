@@ -40,41 +40,22 @@ export async function POST(
             );
         }
 
-        // Parse the request body
-        const body = await req.json();
-        const { proposal, budget, timeline, experience } = body;
-
-        // Validate required fields
-        if (!proposal || !budget || !timeline) {
-            return NextResponse.json(
-                { error: "Proposal, budget, and timeline are required" },
-                { status: 400 }
-            );
-        }
-
-        // Check if RFP exists and is published
+        // Get RFP data to verify it's published and not expired
         const { data: rfp, error: rfpError } = await supabase
             .from('rfps')
-            .select('id, status, deadline')
+            .select('*')
             .eq('id', rfpId)
             .eq('status', 'published')
             .single();
 
-        if (rfpError) {
-            if (rfpError.code === 'PGRST116') {
-                return NextResponse.json(
-                    { error: "RFP not found" },
-                    { status: 404 }
-                );
-            }
-            console.error("RFP fetch error:", rfpError);
+        if (rfpError || !rfp) {
             return NextResponse.json(
-                { error: "Failed to fetch RFP" },
-                { status: 500 }
+                { error: "RFP not found or not published" },
+                { status: 404 }
             );
         }
 
-        // Check if RFP is expired
+        // Check if RFP has expired
         if (new Date(rfp.deadline) < new Date()) {
             return NextResponse.json(
                 { error: "RFP has expired and is no longer accepting proposals" },
@@ -82,21 +63,13 @@ export async function POST(
             );
         }
 
-        // Check if user has already submitted a proposal for this RFP
-        const { data: existingResponse, error: checkError } = await supabase
+        // Check if supplier has already submitted a proposal for this RFP
+        const { data: existingResponse } = await supabase
             .from('rfp_responses')
             .select('id')
             .eq('rfp_id', rfpId)
             .eq('supplier_id', user.id)
             .single();
-
-        if (checkError && checkError.code !== 'PGRST116') {
-            console.error("Response check error:", checkError);
-            return NextResponse.json(
-                { error: "Failed to check existing response" },
-                { status: 500 }
-            );
-        }
 
         if (existingResponse) {
             return NextResponse.json(
@@ -105,24 +78,43 @@ export async function POST(
             );
         }
 
-        // Insert the response
+        // Parse the request body
+        const body = await req.json();
+        const { proposal, budget, timeline, experience } = body;
+
+        // Validate required fields
+        if (!proposal || !budget || !timeline || !experience) {
+            return NextResponse.json(
+                { error: "All fields are required: proposal, budget, timeline, experience" },
+                { status: 400 }
+            );
+        }
+
+        // Validate budget is a positive number
+        if (typeof budget !== 'number' || budget <= 0) {
+            return NextResponse.json(
+                { error: "Budget must be a positive number" },
+                { status: 400 }
+            );
+        }
+
+        // Create the response in the database
         const { data: response, error: insertError } = await supabase
             .from('rfp_responses')
             .insert({
                 rfp_id: rfpId,
                 supplier_id: user.id,
-                proposal,
-                budget: parseFloat(budget.replace(/[^0-9.]/g, '')) || null,
-                timeline,
-                experience: experience || null,
-                status: 'submitted',
-                submitted_at: new Date().toISOString(),
+                proposal: proposal.trim(),
+                budget: budget,
+                timeline: timeline.trim(),
+                experience: experience.trim(),
+                status: 'submitted'
             })
             .select()
             .single();
 
         if (insertError) {
-            console.error("Response insert error:", insertError);
+            console.error("Response creation error:", insertError);
             return NextResponse.json(
                 { error: "Failed to submit proposal" },
                 { status: 500 }
@@ -131,7 +123,12 @@ export async function POST(
 
         return NextResponse.json({
             message: "Proposal submitted successfully",
-            response
+            response: {
+                id: response.id,
+                rfp_id: response.rfp_id,
+                status: response.status,
+                submitted_at: response.submitted_at
+            }
         }, { status: 201 });
 
     } catch (error) {
