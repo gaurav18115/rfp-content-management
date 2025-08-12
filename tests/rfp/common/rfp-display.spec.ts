@@ -5,7 +5,7 @@ test.describe('RFP Display', () => {
     test.beforeEach(async ({ page }) => {
         await loginAsSupplier(page, { waitForDashboard: false });
         await page.goto('/rfps');
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
     });
 
     test.afterEach(async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('RFP Display', () => {
             await expect(firstCard).toBeVisible();
             await expect(firstCard.locator('[data-testid="rfp-title"]')).toBeVisible();
             await expect(firstCard.locator('[data-testid="rfp-description"]')).toBeVisible();
-            await expect(firstCard.getByRole('button', { name: 'View Details' })).toBeVisible();
+            await expect(firstCard.getByTestId('rfp-view-details')).toBeVisible();
         }
     });
 });

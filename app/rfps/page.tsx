@@ -48,25 +48,26 @@ export default function RfpsPage() {
 
             const params = new URLSearchParams({
                 page: currentPage.toString(),
-                limit: "10"
+                limit: "10",
+                ...(search && { search }),
+                ...(category && { category }),
             });
-
-            if (search) params.append("search", search);
-            if (category && category !== "all") params.append("category", category);
 
             const response = await fetch(`/api/rfps/browse?${params}`);
 
             if (!response.ok) {
-                throw new Error("Failed to fetch RFPs");
+                throw new Error('Failed to fetch RFPs');
             }
 
             const data: RFPBrowseResponse = await response.json();
             setRfps(data.rfps);
-            setCategories(data.filters.categories || []);
             setPagination(data.pagination);
+            setCategories(data.filters.categories);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred");
-            // Set empty categories array to prevent Select component crash
+            console.error('Error fetching RFPs:', err);
+            setError(err instanceof Error ? err.message : 'An error occurred');
+            setRfps([]);
+            setPagination({ page: 1, limit: 10, total: 0, totalPages: 0 });
             setCategories([]);
         } finally {
             setLoading(false);

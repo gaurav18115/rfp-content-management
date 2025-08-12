@@ -375,7 +375,7 @@ export default function RfpForm({ mode, initialData, onSubmit, onCancel, onPubli
                     </div>
 
                     <div className="flex gap-4 pt-4">
-                        <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                        <Button type="submit" className="flex-1" disabled={isSubmitting} data-testid="rfp-submit-button">
                             {isSubmitting ? (mode === 'create' ? "Creating..." : "Updating...") : (mode === 'create' ? "Create RFP" : "Update RFP")}
                         </Button>
 
@@ -386,12 +386,13 @@ export default function RfpForm({ mode, initialData, onSubmit, onCancel, onPubli
                                 onClick={onPublish}
                                 disabled={isSubmitting}
                                 className="bg-green-600 hover:bg-green-700"
+                                data-testid="rfp-publish-button"
                             >
                                 Publish RFP
                             </Button>
                         )}
 
-                        <Button type="button" variant="outline" onClick={onCancel}>
+                        <Button type="button" variant="outline" onClick={onCancel} data-testid="rfp-cancel-button">
                             Cancel
                         </Button>
                     </div>

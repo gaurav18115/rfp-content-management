@@ -75,16 +75,16 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
             <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold mb-2">{rfp.title}</h1>
-                        <p className="text-lg text-muted-foreground mb-4">
+                        <h1 className="text-3xl font-bold mb-2" data-testid="rfp-title">{rfp.title}</h1>
+                        <p className="text-lg text-muted-foreground mb-4" data-testid="rfp-description">
                             {rfp.description}
                         </p>
                     </div>
                     <div className="flex flex-col gap-2 items-end">
-                        <Badge variant={getPriorityColor(rfp.priority)} className="text-sm">
+                        <Badge variant={getPriorityColor(rfp.priority)} className="text-sm" data-testid="rfp-priority-badge">
                             {rfp.priority} Priority
                         </Badge>
-                        <Badge variant={getCategoryColor(rfp.category)} className="text-sm">
+                        <Badge variant={getCategoryColor(rfp.category)} className="text-sm" data-testid="rfp-category-badge">
                             {rfp.category}
                         </Badge>
                     </div>
@@ -92,14 +92,14 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
 
                 {/* Status and Deadline Alert */}
                 {isExpired && (
-                    <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+                    <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive" data-testid="rfp-expired-warning">
                         <AlertCircle className="h-5 w-5" />
                         <span className="font-medium">This RFP has expired and is no longer accepting submissions.</span>
                     </div>
                 )}
 
                 {!isExpired && deadlineInfo.text !== 'Today' && deadlineInfo.text !== 'Tomorrow' && deadlineInfo.text.includes('7') && (
-                    <div className="flex items-center gap-2 p-4 bg-orange-100 border border-orange-200 rounded-lg text-orange-800">
+                    <div className="flex items-center gap-2 p-4 bg-orange-100 border border-orange-200 rounded-lg text-orange-800" data-testid="rfp-deadline-approaching-warning">
                         <Clock className="h-5 w-5" />
                         <span className="font-medium">Deadline approaching! Submit your proposal soon.</span>
                     </div>
@@ -165,7 +165,7 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
                     {/* Key Information */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Key Information</CardTitle>
+                            <CardTitle data-testid="rfp-key-information-title">Key Information</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center gap-3">
@@ -194,7 +194,7 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
                                 <span className="font-medium">{rfp.budget_range}</span>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3" data-testid="rfp-deadline-section">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
                                 <div>
                                     <p className="font-medium">{formatDate(rfp.deadline)}</p>
@@ -210,7 +210,7 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
                     {(rfp.contact_email || rfp.contact_phone) && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Contact Information</CardTitle>
+                                <CardTitle data-testid="rfp-contact-information-title">Contact Information</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 {rfp.contact_email && (
@@ -243,7 +243,7 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
                     {rfp.tags && rfp.tags.length > 0 && (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex items-center gap-2" data-testid="rfp-tags-title">
                                     <Tag className="h-4 w-4" />
                                     Tags
                                 </CardTitle>
@@ -263,18 +263,18 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
                     {/* Action Buttons */}
                     <div className="space-y-3">
                         {!isExpired ? (
-                            <Button asChild className="w-full">
+                            <Button asChild className="w-full" data-testid="rfp-submit-proposal-button">
                                 <Link href={`/rfps/${rfp.id}/respond`}>
                                     Submit Proposal
                                 </Link>
                             </Button>
                         ) : (
-                            <Button disabled className="w-full">
+                            <Button disabled className="w-full" data-testid="rfp-expired-button">
                                 RFP Expired
                             </Button>
                         )}
 
-                        <Button variant="outline" asChild className="w-full">
+                        <Button variant="outline" asChild className="w-full" data-testid="rfp-back-button">
                             <Link href="/rfps">
                                 ← Back to RFPs
                             </Link>

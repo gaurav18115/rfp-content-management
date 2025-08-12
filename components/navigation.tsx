@@ -55,7 +55,7 @@ export function Navigation() {
                         </Button>
                     </Link>
 
-                    <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    <Button variant="ghost" size="sm" onClick={handleLogout} data-testid="logout-button">
                         <LogOutIcon size="16" className="mr-2" />
                         Logout
                     </Button>
