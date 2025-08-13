@@ -14,7 +14,7 @@ import {
     AlertCircle
 } from "lucide-react";
 import { IRFP } from "@/types/rfp";
-import Link from "next/link";
+import { RFPActions } from "./rfp-actions";
 
 interface RFPDetailProps {
     rfp: IRFP & {
@@ -261,27 +261,9 @@ export function RFPDetail({ rfp }: RFPDetailProps) {
                     )}
 
                     {/* Action Buttons */}
-                    <div className="space-y-3">
-                        {!isExpired ? (
-                            <Button asChild className="w-full">
-                                <Link href={`/rfps/${rfp.id}/respond`}>
-                                    Submit Proposal
-                                </Link>
-                            </Button>
-                        ) : (
-                            <Button disabled className="w-full">
-                                RFP Expired
-                            </Button>
-                        )}
-
-                        <Button variant="outline" asChild className="w-full">
-                            <Link href="/rfps">
-                                ← Back to RFPs
-                            </Link>
-                        </Button>
-                    </div>
+                    <RFPActions rfpId={rfp.id} isExpired={isExpired} />
                 </div>
             </div>
         </div>
     );
-} 
+}

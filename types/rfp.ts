@@ -24,9 +24,21 @@ export interface IRFP {
 
 export interface IResponse {
     id: string;
-    rfpTitle: string;
-    company: string;
-    submittedAt: string;
+    rfp_id: string;
+    supplier_id: string;
+    proposal: string;
+    budget: number;
+    timeline: string;
+    experience: string;
     status: string;
-    category: string;
-} 
+    submitted_at: string;
+    reviewed_at?: string;
+    reviewed_by?: string;
+    rejection_reason?: string;
+    user_profiles?: {
+        company_name?: string;
+        first_name?: string;
+        last_name?: string;
+        email?: string;
+    };
+}
