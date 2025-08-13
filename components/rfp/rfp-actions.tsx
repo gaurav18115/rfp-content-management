@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { IResponse } from '@/types/rfp';
+import Link from 'next/link';
 
 interface RFPActionsProps {
     rfpId: string;
@@ -14,7 +14,6 @@ interface RFPActionsProps {
 }
 
 export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
-    const router = useRouter();
     const [userResponse, setUserResponse] = useState<IResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [userRole, setUserRole] = useState<string | null>(null);
@@ -74,7 +73,7 @@ export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
                     Loading...
                 </Button>
                 <Button variant="outline" asChild className="w-full">
-                    <a href="/rfps">← Back to RFPs</a>
+                    <Link href="/rfps">← Back to RFPs</Link>
                 </Button>
             </div>
         );
@@ -85,10 +84,10 @@ export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
         return (
             <div className="space-y-3">
                 <Button asChild className="w-full">
-                    <a href="/auth/login">Sign in to Submit Proposal</a>
+                    <Link href="/auth/login">Sign in to Submit Proposal</Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full">
-                    <a href="/rfps">← Back to RFPs</a>
+                    <Link href="/rfps">← Back to RFPs</Link>
                 </Button>
             </div>
         );
@@ -99,10 +98,10 @@ export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
         return (
             <div className="space-y-3">
                 <Button variant="outline" asChild className="w-full">
-                    <a href={`/dashboard/responses?rfp=${rfpId}`}>View Responses</a>
+                    <Link href={`/dashboard/responses?rfp=${rfpId}`}>View Responses</Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full">
-                    <a href="/rfps">← Back to RFPs</a>
+                    <Link href="/rfps">← Back to RFPs</Link>
                 </Button>
             </div>
         );
@@ -136,11 +135,11 @@ export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
                     </div>
                     
                     <Button variant="outline" asChild className="w-full">
-                        <a href="/dashboard/my-responses">View My Responses</a>
+                        <Link href="/dashboard/my-responses">View My Responses</Link>
                     </Button>
                     
                     <Button variant="outline" asChild className="w-full">
-                        <a href="/rfps">← Back to RFPs</a>
+                        <Link href="/rfps">← Back to RFPs</Link>
                     </Button>
                 </div>
             );
@@ -151,11 +150,11 @@ export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
             return (
                 <div className="space-y-3">
                     <Button asChild className="w-full">
-                        <a href={`/rfps/${rfpId}/respond`}>Submit Proposal</a>
+                        <Link href={`/rfps/${rfpId}/respond`}>Submit Proposal</Link>
                     </Button>
                     
                     <Button variant="outline" asChild className="w-full">
-                        <a href="/rfps">← Back to RFPs</a>
+                        <Link href="/rfps">← Back to RFPs</Link>
                     </Button>
                 </div>
             );
@@ -179,7 +178,7 @@ export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
                 </Button>
                 
                 <Button variant="outline" asChild className="w-full">
-                    <a href="/rfps">← Back to RFPs</a>
+                    <Link href="/rfps">← Back to RFPs</Link>
                 </Button>
             </div>
         );
@@ -189,7 +188,7 @@ export function RFPActions({ rfpId, isExpired }: RFPActionsProps) {
     return (
         <div className="space-y-3">
             <Button variant="outline" asChild className="w-full">
-                <a href="/rfps">← Back to RFPs</a>
+                <Link href="/rfps">← Back to RFPs</Link>
             </Button>
         </div>
     );

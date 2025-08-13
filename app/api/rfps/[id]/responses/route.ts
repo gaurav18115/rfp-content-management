@@ -3,10 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
-        const supabase = createClient();
+        const supabase = await createClient();
         
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -36,7 +37,7 @@ export async function POST(
         const { data: rfp, error: rfpError } = await supabase
             .from('rfps')
             .select('id, status, deadline')
-            .eq('id', params.id)
+            .eq('id', id)
             .eq('status', 'published')
             .single();
 
@@ -59,7 +60,7 @@ export async function POST(
         const { data: existingResponse } = await supabase
             .from('rfp_responses')
             .select('id')
-            .eq('rfp_id', params.id)
+            .eq('rfp_id', id)
             .eq('supplier_id', user.id)
             .single();
 
@@ -94,7 +95,7 @@ export async function POST(
         const { data: response, error: insertError } = await supabase
             .from('rfp_responses')
             .insert({
-                rfp_id: params.id,
+                rfp_id: id,
                 supplier_id: user.id,
                 proposal: proposal.trim(),
                 budget: parseFloat(budget),
@@ -135,10 +136,11 @@ export async function POST(
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
-        const supabase = createClient();
+        const supabase = await createClient();
         
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -171,7 +173,7 @@ export async function GET(
             const { data: rfp, error: rfpError } = await supabase
                 .from('rfps')
                 .select('id')
-                .eq('id', params.id)
+                .eq('id', id)
                 .eq('created_by', user.id)
                 .single();
 
@@ -193,7 +195,7 @@ export async function GET(
                         email
                     )
                 `)
-                .eq('rfp_id', params.id)
+                .eq('rfp_id', id)
                 .order('submitted_at', { ascending: false });
 
             if (error) {
@@ -206,7 +208,7 @@ export async function GET(
             const { data, error } = await supabase
                 .from('rfp_responses')
                 .select('*')
-                .eq('rfp_id', params.id)
+                .eq('rfp_id', id)
                 .eq('supplier_id', user.id)
                 .order('submitted_at', { ascending: false });
 

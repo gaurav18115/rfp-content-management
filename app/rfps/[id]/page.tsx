@@ -6,13 +6,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { IRFP } from '@/types/rfp';
 
 interface RFPDetailPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
-    searchParams: {
+    }>;
+    searchParams: Promise<{
         success?: string;
         error?: string;
-    };
+    }>;
 }
 
 async function getRFP(id: string): Promise<IRFP | null> {

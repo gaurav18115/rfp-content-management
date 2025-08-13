@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FileText, Loader2, AlertCircle } from "lucide-react";
 import { RFPCard } from "@/components/rfp/rfp-card";
 import { RFPFilters } from "@/components/rfp/rfp-filters";
@@ -41,7 +41,7 @@ export default function RfpsPage() {
         totalPages: 1
     });
 
-    const fetchRFPs = async () => {
+    const fetchRFPs = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -71,11 +71,11 @@ export default function RfpsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, search, category]);
 
     useEffect(() => {
         fetchRFPs();
-    }, [currentPage, search, category]);
+    }, [fetchRFPs]);
 
     const handleSearchChange = (newSearch: string) => {
         setSearch(newSearch);
