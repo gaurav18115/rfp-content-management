@@ -115,8 +115,8 @@ export default function ResponsesPage() {
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(r =>
-                r.supplier_name.toLowerCase().includes(query) ||
-                r.supplier_company.toLowerCase().includes(query) ||
+                r.supplier_name?.toLowerCase().includes(query) ||
+                r.supplier_company?.toLowerCase().includes(query) ||
                 r.rfp_title.toLowerCase().includes(query) ||
                 r.proposal.toLowerCase().includes(query)
             );
