@@ -40,6 +40,7 @@ async function getRFP(id: string): Promise<IRFP | null> {
 
 export default async function RFPDetailPage({ params, searchParams }: RFPDetailPageProps) {
     const resolvedParams = await params;
+    const resolvedSearchParams = await searchParams;
     const rfp = await getRFP(resolvedParams.id);
 
     if (!rfp) {
@@ -48,12 +49,12 @@ export default async function RFPDetailPage({ params, searchParams }: RFPDetailP
 
     return (
         <div className="container mx-auto py-8 px-4">
-            {searchParams.success === 'response-submitted' && (
+            {resolvedSearchParams.success === 'response-submitted' && (
                 <div className="mb-6">
                     <SuccessMessage message="Your response has been submitted successfully! The buyer will review it and get back to you." />
                 </div>
             )}
-            {searchParams.error === 'already-responded' && (
+            {resolvedSearchParams.error === 'already-responded' && (
                 <div className="mb-6">
                     <Alert variant="destructive">
                         <AlertDescription>You have already submitted a response to this RFP.</AlertDescription>
