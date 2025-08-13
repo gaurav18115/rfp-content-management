@@ -3,11 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Calendar, Building, Plus, Eye, Edit, Globe, DollarSign } from "lucide-react";
+import { FileText, Calendar, Building, Plus, Eye, Edit, Globe, DollarSign, Clock, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { IRFP } from "@/types/rfp";
-import { IRFP } from "@/types/rfp";
 import { useToast } from "@/components/toast/use-toast";
+import { useUser } from "@/lib/contexts/UserContext";
 
 // Extended interface for response data from our API
 interface ISupplierResponse {
@@ -27,9 +27,21 @@ interface ISupplierResponse {
     budgetRange: string;
 }
 
+interface ResponseData {
+    rfp_id: string;
+    status: string;
+    [key: string]: string | number | boolean;
+}
+
+interface ExtendedRFP extends IRFP {
+    responseCount: number;
+    responses: ResponseData[];
+}
+
 export default function MyRfpsPage() {
     const { toast } = useToast();
-    const [myRfps, setMyRfps] = useState<IRFP[]>([]);
+    const { profile, loading: userLoading } = useUser();
+    const [myRfps, setMyRfps] = useState<ExtendedRFP[]>([]);
     const [myResponses, setMyResponses] = useState<ISupplierResponse[]>([]);
     const [userRole, setUserRole] = useState<string | null>(null);
     const [responsesLoading, setResponsesLoading] = useState(true);
@@ -37,34 +49,7 @@ export default function MyRfpsPage() {
     const [error, setError] = useState<string | null>(null);
     const [publishingRfpId, setPublishingRfpId] = useState<string | null>(null);
 
-    const fetchUserData = useCallback(async () => {
-        try {
-            // Fetch user role first
-            const userResponse = await fetch('/api/auth/user');
-            if (userResponse.ok) {
-                const userData = await userResponse.json();
-                console.log('User data:', userData); // Debug log
-                setUserRole(userData.user?.role);
-
-                // Fetch appropriate data based on role
-                if (userData.user?.role === 'buyer') {
-                    await fetchMyRfps();
-                } else if (userData.user?.role === 'supplier') {
-                    await fetchMyResponses();
-                }
-            } else {
-                console.error('Failed to fetch user data:', userResponse.status);
-            }
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchUserData();
-    }, [fetchUserData]);
-
-    const fetchMyRfps = async () => {
+    const fetchMyRfps = useCallback(async () => {
         try {
             setIsLoading(true);
             const [rfpsResponse, responsesResponse] = await Promise.all([
@@ -95,7 +80,7 @@ export default function MyRfpsPage() {
                     }, {});
 
                     // Merge responses with RFPs
-                    const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                    const rfpsWithResponses: ExtendedRFP[] = rfps.map((rfp: IRFP) => ({
                         ...rfp,
                         responseCount: responsesByRfp[rfp.id]?.length || 0,
                         responses: responsesByRfp[rfp.id] || []
@@ -104,7 +89,7 @@ export default function MyRfpsPage() {
                     setMyRfps(rfpsWithResponses);
                 } else {
                     // If responses fetch fails, still show RFPs without response data
-                    const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                    const rfpsWithResponses: ExtendedRFP[] = rfps.map((rfp: IRFP) => ({
                         ...rfp,
                         responseCount: 0,
                         responses: []
@@ -113,7 +98,7 @@ export default function MyRfpsPage() {
                 }
             } else {
                 // For non-buyers, just show RFPs without response data
-                const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                const rfpsWithResponses: ExtendedRFP[] = rfps.map((rfp: IRFP) => ({
                     ...rfp,
                     responseCount: 0,
                     responses: []
@@ -126,9 +111,9 @@ export default function MyRfpsPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [profile]);
 
-    const fetchMyResponses = async () => {
+    const fetchMyResponses = useCallback(async () => {
         try {
             setResponsesLoading(true);
             console.log('Fetching supplier responses...'); // Debug log
@@ -149,7 +134,28 @@ export default function MyRfpsPage() {
         } finally {
             setResponsesLoading(false);
         }
-    };
+    }, []);
+
+    const fetchUserData = useCallback(async () => {
+        if (userLoading || !profile) return;
+        
+        try {
+            setUserRole(profile.role);
+            
+            // Fetch appropriate data based on role
+            if (profile.role === 'buyer') {
+                await fetchMyRfps();
+            } else if (profile.role === 'supplier') {
+                await fetchMyResponses();
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }, [userLoading, profile, fetchMyRfps, fetchMyResponses]);
+
+    useEffect(() => {
+        fetchUserData();
+    }, [fetchUserData]);
 
     const handlePublishRfp = async (rfpId: string) => {
         try {
@@ -187,25 +193,24 @@ export default function MyRfpsPage() {
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'submitted':
-                return <Badge variant="secondary" className="bg-blue-100 text-blue-800"><Clock className="w-3 h-3 mr-1" />Submitted</Badge>;
-            case 'under_review':
-                return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />Under Review</Badge>;
-            case 'approved':
-                return <Badge variant="secondary" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
-            case 'rejected':
-                return <Badge variant="secondary" className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
-            default:
-                return <Badge variant="secondary">{status}</Badge>;
-        }
-    };
+
 
     const totalResponses = myRfps.reduce((sum, rfp) => sum + rfp.responseCount, 0);
     const pendingResponses = myRfps.reduce((sum, rfp) =>
-        sum + rfp.responses.filter(r => r.status === 'submitted' || r.status === 'under_review').length, 0
+        sum + rfp.responses.filter((r: ResponseData) => r.status === 'submitted' || r.status === 'under_review').length, 0
     );
+
+    // Show loading state while checking user
+    if (userLoading) {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">

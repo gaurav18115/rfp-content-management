@@ -25,7 +25,7 @@ import {
 import { useToast } from "@/components/toast/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { RFPResponse } from "@/types/rfp";
+import { IResponseWithRFP } from "@/types/rfp";
 import Link from "next/link";
 
 interface RFPFilter {
@@ -35,8 +35,8 @@ interface RFPFilter {
 
 export default function ResponsesPage() {
     const { toast } = useToast();
-    const [responses, setResponses] = useState<RFPResponse[]>([]);
-    const [filteredResponses, setFilteredResponses] = useState<RFPResponse[]>([]);
+    const [responses, setResponses] = useState<IResponseWithRFP[]>([]);
+    const [filteredResponses, setFilteredResponses] = useState<IResponseWithRFP[]>([]);
     const [rfpFilters, setRfpFilters] = useState<RFPFilter[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function ResponsesPage() {
 
             // Extract unique RFPs for filtering
             const rfpMap = new Map<string, string>();
-            responsesData.forEach((r: RFPResponse) => {
+            responsesData.forEach((r: IResponseWithRFP) => {
                 if (!rfpMap.has(r.rfp_id)) {
                     rfpMap.set(r.rfp_id, r.rfp_title);
                 }

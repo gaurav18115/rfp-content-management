@@ -42,3 +42,13 @@ export interface IResponse {
         email?: string;
     };
 }
+
+export interface IResponseWithRFP extends IResponse {
+    rfp_title: string;
+    rfp_company?: string;
+    rfp_category?: string;
+    rfp_deadline?: string;
+    rfp_budget_range?: string;
+    supplier_name?: string;
+    supplier_company?: string;
+}
