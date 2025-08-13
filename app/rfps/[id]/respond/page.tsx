@@ -11,7 +11,7 @@ interface ResponseSubmissionPageProps {
 
 async function getRFP(id: string): Promise<IRFP | null> {
     const supabase = await createClient();
-    
+
     const { data: rfp, error } = await supabase
         .from('rfps')
         .select(`
@@ -35,7 +35,7 @@ async function getRFP(id: string): Promise<IRFP | null> {
 
 async function checkExistingResponse(rfpId: string, userId: string): Promise<boolean> {
     const supabase = await createClient();
-    
+
     const { data: existingResponse } = await supabase
         .from('rfp_responses')
         .select('id')
@@ -49,10 +49,10 @@ async function checkExistingResponse(rfpId: string, userId: string): Promise<boo
 export default async function ResponseSubmissionPage({ params }: ResponseSubmissionPageProps) {
     const { id } = await params;
     const supabase = await createClient();
-    
+
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+
     if (userError || !user) {
         redirect('/auth/login');
     }
@@ -70,14 +70,14 @@ export default async function ResponseSubmissionPage({ params }: ResponseSubmiss
 
     // Get RFP details
     const rfp = await getRFP(id);
-    
+
     if (!rfp) {
         notFound();
     }
 
     // Check if user has already responded
     const hasResponded = await checkExistingResponse(id, user.id);
-    
+
     if (hasResponded) {
         redirect(`/rfps/${id}?error=already-responded`);
     }
@@ -91,7 +91,7 @@ export default async function ResponseSubmissionPage({ params }: ResponseSubmiss
                         {rfp.title}
                     </p>
                 </div>
-                
+
                 <ResponseSubmissionForm rfp={rfp} />
             </div>
         </div>

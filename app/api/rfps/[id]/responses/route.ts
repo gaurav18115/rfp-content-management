@@ -8,10 +8,10 @@ export async function POST(
     const { id } = await params;
     try {
         const supabase = await createClient();
-        
+
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+
         if (userError || !user) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
@@ -141,10 +141,10 @@ export async function GET(
     const { id } = await params;
     try {
         const supabase = await createClient();
-        
+
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+
         if (userError || !user) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
@@ -167,7 +167,7 @@ export async function GET(
         }
 
         let responses;
-        
+
         if (profile?.role === 'buyer') {
             // Buyers can see all responses to their RFPs
             const { data: rfp, error: rfpError } = await supabase
@@ -181,7 +181,7 @@ export async function GET(
                 return NextResponse.json(
                     { error: 'RFP not found or access denied' },
                     { status: 404 }
-            );
+                );
             }
 
             const { data, error } = await supabase

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Calendar, Building, Plus, Eye, Edit, Globe, DollarSign } from "lucide-react";
 import Link from "next/link";
 import { IRFP } from "@/types/rfp";
+import { IRFP } from "@/types/rfp";
 import { useToast } from "@/components/toast/use-toast";
 
 // Extended interface for response data from our API
@@ -66,14 +67,59 @@ export default function MyRfpsPage() {
     const fetchMyRfps = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('/api/rfps');
+            const [rfpsResponse, responsesResponse] = await Promise.all([
+                fetch('/api/rfps'),
+                profile?.role === 'buyer' ? fetch('/api/responses') : Promise.resolve(null)
+            ]);
 
-            if (!response.ok) {
+            if (!rfpsResponse.ok) {
                 throw new Error('Failed to fetch RFPs');
             }
 
-            const data = await response.json();
-            setMyRfps(data.rfps || []);
+            const rfpsData = await rfpsResponse.json();
+            const rfps = rfpsData.rfps || [];
+
+            // If buyer, fetch responses and merge with RFPs
+            if (profile?.role === 'buyer' && responsesResponse) {
+                if (responsesResponse.ok) {
+                    const responsesData = await responsesResponse.json();
+                    const responses = responsesData.responses || [];
+
+                    // Group responses by RFP ID
+                    const responsesByRfp = responses.reduce((acc: Record<string, ResponseData[]>, response: ResponseData) => {
+                        if (!acc[response.rfp_id]) {
+                            acc[response.rfp_id] = [];
+                        }
+                        acc[response.rfp_id].push(response);
+                        return acc;
+                    }, {});
+
+                    // Merge responses with RFPs
+                    const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                        ...rfp,
+                        responseCount: responsesByRfp[rfp.id]?.length || 0,
+                        responses: responsesByRfp[rfp.id] || []
+                    }));
+
+                    setMyRfps(rfpsWithResponses);
+                } else {
+                    // If responses fetch fails, still show RFPs without response data
+                    const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                        ...rfp,
+                        responseCount: 0,
+                        responses: []
+                    }));
+                    setMyRfps(rfpsWithResponses);
+                }
+            } else {
+                // For non-buyers, just show RFPs without response data
+                const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                    ...rfp,
+                    responseCount: 0,
+                    responses: []
+                }));
+                setMyRfps(rfpsWithResponses);
+            }
         } catch (err) {
             console.error('Error fetching RFPs:', err);
             setError(err instanceof Error ? err.message : 'Failed to fetch RFPs');
@@ -141,6 +187,26 @@ export default function MyRfpsPage() {
         }
     };
 
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'submitted':
+                return <Badge variant="secondary" className="bg-blue-100 text-blue-800"><Clock className="w-3 h-3 mr-1" />Submitted</Badge>;
+            case 'under_review':
+                return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />Under Review</Badge>;
+            case 'approved':
+                return <Badge variant="secondary" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+            case 'rejected':
+                return <Badge variant="secondary" className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+            default:
+                return <Badge variant="secondary">{status}</Badge>;
+        }
+    };
+
+    const totalResponses = myRfps.reduce((sum, rfp) => sum + rfp.responseCount, 0);
+    const pendingResponses = myRfps.reduce((sum, rfp) =>
+        sum + rfp.responses.filter(r => r.status === 'submitted' || r.status === 'under_review').length, 0
+    );
+
     return (
         <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
             <div className="w-full">
@@ -154,6 +220,50 @@ export default function MyRfpsPage() {
                     }
                 </p>
             </div>
+
+            {/* Response Summary Stats */}
+            {profile?.role === 'buyer' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Responses</CardTitle>
+                            <MessageSquare className="h-4 w-4 text-blue-600" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{totalResponses}</div>
+                            <p className="text-xs text-muted-foreground">
+                                Across all your RFPs
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+                            <Clock className="h-4 w-4 text-yellow-600" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{pendingResponses}</div>
+                            <p className="text-xs text-muted-foreground">
+                                Awaiting your action
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Active RFPs</CardTitle>
+                            <FileText className="h-4 w-4 text-purple-600" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{myRfps.filter(rfp => rfp.status === 'published').length}</div>
+                            <p className="text-xs text-muted-foreground">
+                                Currently published
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* My Created RFPs - Only for buyers */}
             {userRole === 'buyer' && (
@@ -325,12 +435,12 @@ export default function MyRfpsPage() {
                                                     {response.category}
                                                 </span>
                                                 <span className={`text-xs px-2 py-1 rounded-full ${response.status === 'submitted'
-                                                        ? 'bg-yellow-100 text-yellow-800'
-                                                        : response.status === 'accepted'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : response.status === 'rejected'
-                                                                ? 'bg-red-100 text-red-800'
-                                                                : 'bg-gray-100 text-gray-800'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : response.status === 'accepted'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : response.status === 'rejected'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : 'bg-gray-100 text-gray-800'
                                                     }`}>
                                                     {response.status.charAt(0).toUpperCase() + response.status.slice(1)}
                                                 </span>

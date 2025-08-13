@@ -17,7 +17,7 @@ interface RFPDetailPageProps {
 
 async function getRFP(id: string): Promise<IRFP | null> {
     const supabase = await createClient();
-    
+
     const { data: rfp, error } = await supabase
         .from('rfps')
         .select(`

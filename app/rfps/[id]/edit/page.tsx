@@ -246,7 +246,7 @@ export default function EditRfpPage() {
                         </Link>
                     </Button>
                 </div>
-                <h1 className="text-3xl font-bold mb-2">Edit RFP</h1>
+                <h1 className="text-3xl font-bold mb-2" data-testid="edit-rfp-page-title">Edit RFP</h1>
                 <p className="text-muted-foreground">
                     Update your Request for Proposal details
                 </p>

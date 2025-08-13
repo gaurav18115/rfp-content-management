@@ -75,10 +75,11 @@ export function ForgotPasswordForm({
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    data-testid="forgot-password-email-input"
                   />
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading} data-testid="forgot-password-submit">
                   {isLoading ? "Sending..." : "Send reset email"}
                 </Button>
               </div>

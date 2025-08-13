@@ -25,10 +25,10 @@ export async function fillSignupForm(
         repeatPassword: string;
     }
 ) {
-    await page.getByLabel('Email').fill(data.email);
-    await page.getByLabel('Role').selectOption(data.role);
-    await page.locator('#password').fill(data.password);
-    await page.locator('#repeat-password').fill(data.repeatPassword);
+    await page.getByTestId('email-input').fill(data.email);
+    await page.getByTestId('role-select').selectOption(data.role);
+    await page.getByTestId('password-input').fill(data.password);
+    await page.getByTestId('repeat-password-input').fill(data.repeatPassword);
 }
 
 /**
@@ -36,7 +36,7 @@ export async function fillSignupForm(
  * @param page - Playwright page object
  */
 export async function submitSignupForm(page: Page) {
-    await page.getByRole('button', { name: 'Sign up' }).click();
+    await page.getByTestId('signup-submit').click();
 }
 
 /**
@@ -45,14 +45,14 @@ export async function submitSignupForm(page: Page) {
  */
 export async function waitForSignupSuccess(page: Page) {
     // Wait for loading state
-    await expect(page.getByRole('button', { name: 'Creating an account...' })).toBeVisible();
+    await expect(page.getByTestId('signup-submit')).toBeVisible();
 
     // Wait for redirect to success page
     await page.waitForURL('/auth/sign-up-success');
 
     // Verify success page content
-    await expect(page.getByRole('heading', { name: 'Thank you for signing up!' })).toBeVisible();
-    await expect(page.getByText('Check your email to confirm')).toBeVisible();
+    await expect(page.getByTestId('signup-success-heading')).toBeVisible();
+    await expect(page.getByTestId('signup-success-message')).toBeVisible();
 }
 
 /**
@@ -88,13 +88,13 @@ export async function loginAsBuyer(
     const { redirectTo = '/auth/login', waitForDashboard = true } = options;
 
     await page.goto(redirectTo);
-    await page.fill('[data-testid="email-input"]', DEMO_ACCOUNTS.buyer.email);
-    await page.fill('[data-testid="password-input"]', DEMO_ACCOUNTS.buyer.password);
-    await page.click('[data-testid="login-submit"]');
+    await page.getByTestId('email-input').fill(DEMO_ACCOUNTS.buyer.email);
+    await page.getByTestId('password-input').fill(DEMO_ACCOUNTS.buyer.password);
+    await page.getByTestId('login-submit').click();
 
     if (waitForDashboard) {
         await page.waitForURL('/dashboard');
-        await expect(page.locator('text=Dashboard')).toBeVisible();
+        await expect(page.getByTestId('dashboard-heading')).toBeVisible();
     }
 }
 
@@ -113,13 +113,13 @@ export async function loginAsSupplier(
     const { redirectTo = '/auth/login', waitForDashboard = true } = options;
 
     await page.goto(redirectTo);
-    await page.fill('[data-testid="email-input"]', DEMO_ACCOUNTS.supplier.email);
-    await page.fill('[data-testid="password-input"]', DEMO_ACCOUNTS.supplier.password);
-    await page.click('[data-testid="login-submit"]');
+    await page.getByTestId('email-input').fill(DEMO_ACCOUNTS.supplier.email);
+    await page.getByTestId('password-input').fill(DEMO_ACCOUNTS.supplier.password);
+    await page.getByTestId('login-submit').click();
 
     if (waitForDashboard) {
         await page.waitForURL('/dashboard');
-        await expect(page.locator('text=Dashboard')).toBeVisible();
+        await expect(page.getByTestId('dashboard-heading')).toBeVisible();
     }
 }
 
@@ -143,13 +143,13 @@ export async function loginWithCredentials(
     const { redirectTo = '/auth/login', waitForDashboard = true } = options;
 
     await page.goto(redirectTo);
-    await page.fill('[data-testid="email-input"]', credentials.email);
-    await page.fill('[data-testid="password-input"]', credentials.password);
-    await page.click('[data-testid="login-submit"]');
+    await page.getByTestId('email-input').fill(credentials.email);
+    await page.getByTestId('password-input').fill(credentials.password);
+    await page.getByTestId('login-submit').click();
 
     if (waitForDashboard) {
         await page.waitForURL('/dashboard');
-        await expect(page.locator('text=Dashboard')).toBeVisible();
+        await expect(page.getByTestId('dashboard-heading')).toBeVisible();
     }
 }
 
@@ -159,11 +159,11 @@ export async function loginWithCredentials(
  * @param waitForRedirect - Whether to wait for redirect to login page
  */
 export async function logout(page: Page, waitForRedirect: boolean = true) {
-    await page.click('button[aria-label="Logout"]');
+    await page.getByTestId('logout-button').click();
 
     if (waitForRedirect) {
         await page.waitForURL('/auth/login');
-        await expect(page.locator('text=Sign In')).toBeVisible();
+        await expect(page.getByTestId('login-page-heading')).toBeVisible();
     }
 }
 
@@ -174,7 +174,7 @@ export async function logout(page: Page, waitForRedirect: boolean = true) {
  */
 export async function isLoggedIn(page: Page): Promise<boolean> {
     try {
-        await expect(page.locator('text=Dashboard')).toBeVisible({ timeout: 2000 });
+        await expect(page.getByTestId('dashboard-heading')).toBeVisible({ timeout: 2000 });
         return true;
     } catch {
         return false;
