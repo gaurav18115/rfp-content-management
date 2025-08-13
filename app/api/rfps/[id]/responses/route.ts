@@ -1,111 +1,104 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(
-    req: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
         const supabase = await createClient();
-        const { id: rfpId } = await params;
 
-        // Get the current user
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-        if (authError || !user) {
+        if (userError || !user) {
             return NextResponse.json(
-                { error: "Unauthorized" },
+                { error: 'Unauthorized' },
                 { status: 401 }
             );
         }
 
-        // Check if user has supplier role
+        // Get user profile to check role
         const { data: profile, error: profileError } = await supabase
             .from('user_profiles')
             .select('role')
             .eq('id', user.id)
             .single();
 
-        if (profileError || !profile) {
+        if (profileError || profile?.role !== 'supplier') {
             return NextResponse.json(
-                { error: "User profile not found" },
-                { status: 404 }
-            );
-        }
-
-        if (profile.role !== 'supplier') {
-            return NextResponse.json(
-                { error: "Only suppliers can submit proposals" },
+                { error: 'Only suppliers can submit responses' },
                 { status: 403 }
             );
         }
 
-        // Get RFP data to verify it's published and not expired
+        // Get RFP details and check if it's published
         const { data: rfp, error: rfpError } = await supabase
             .from('rfps')
-            .select('*')
-            .eq('id', rfpId)
+            .select('id, status, deadline')
+            .eq('id', id)
             .eq('status', 'published')
             .single();
 
         if (rfpError || !rfp) {
             return NextResponse.json(
-                { error: "RFP not found or not published" },
+                { error: 'RFP not found or not published' },
                 { status: 404 }
             );
         }
 
-        // Check if RFP has expired
+        // Check if RFP deadline has passed
         if (new Date(rfp.deadline) < new Date()) {
             return NextResponse.json(
-                { error: "RFP has expired and is no longer accepting proposals" },
+                { error: 'RFP deadline has passed' },
                 { status: 400 }
             );
         }
 
-        // Check if supplier has already submitted a proposal for this RFP
+        // Check if user has already responded
         const { data: existingResponse } = await supabase
             .from('rfp_responses')
             .select('id')
-            .eq('rfp_id', rfpId)
+            .eq('rfp_id', id)
             .eq('supplier_id', user.id)
             .single();
 
         if (existingResponse) {
             return NextResponse.json(
-                { error: "You have already submitted a proposal for this RFP" },
-                { status: 400 }
+                { error: 'You have already submitted a response to this RFP' },
+                { status: 409 }
             );
         }
 
-        // Parse the request body
-        const body = await req.json();
+        // Get request body
+        const body = await request.json();
         const { proposal, budget, timeline, experience } = body;
 
         // Validate required fields
         if (!proposal || !budget || !timeline || !experience) {
             return NextResponse.json(
-                { error: "All fields are required: proposal, budget, timeline, experience" },
+                { error: 'All fields are required' },
                 { status: 400 }
             );
         }
 
         // Validate budget is a positive number
-        if (typeof budget !== 'number' || budget <= 0) {
+        if (isNaN(budget) || budget <= 0) {
             return NextResponse.json(
-                { error: "Budget must be a positive number" },
+                { error: 'Budget must be a positive number' },
                 { status: 400 }
             );
         }
 
-        // Create the response in the database
+        // Insert response
         const { data: response, error: insertError } = await supabase
             .from('rfp_responses')
             .insert({
-                rfp_id: rfpId,
+                rfp_id: id,
                 supplier_id: user.id,
                 proposal: proposal.trim(),
-                budget: budget,
+                budget: parseFloat(budget),
                 timeline: timeline.trim(),
                 experience: experience.trim(),
                 status: 'submitted'
@@ -114,15 +107,16 @@ export async function POST(
             .single();
 
         if (insertError) {
-            console.error("Response creation error:", insertError);
+            console.error('Error inserting response:', insertError);
             return NextResponse.json(
-                { error: "Failed to submit proposal" },
+                { error: 'Failed to submit response' },
                 { status: 500 }
             );
         }
 
         return NextResponse.json({
-            message: "Proposal submitted successfully",
+            success: true,
+            message: 'Response submitted successfully',
             response: {
                 id: response.id,
                 rfp_id: response.rfp_id,
@@ -132,10 +126,114 @@ export async function POST(
         }, { status: 201 });
 
     } catch (error) {
-        console.error("Response submission error:", error);
+        console.error('Error in response submission:', error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: 'Internal server error' },
             { status: 500 }
         );
     }
-} 
+}
+
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+    try {
+        const supabase = await createClient();
+
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
+        // Get user profile to check role
+        const { data: profile, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError) {
+            return NextResponse.json(
+                { error: 'User profile not found' },
+                { status: 404 }
+            );
+        }
+
+        let responses;
+
+        if (profile?.role === 'buyer') {
+            // Buyers can see all responses to their RFPs
+            const { data: rfp, error: rfpError } = await supabase
+                .from('rfps')
+                .select('id')
+                .eq('id', id)
+                .eq('created_by', user.id)
+                .single();
+
+            if (rfpError || !rfp) {
+                return NextResponse.json(
+                    { error: 'RFP not found or access denied' },
+                    { status: 404 }
+                );
+            }
+
+            const { data, error } = await supabase
+                .from('rfp_responses')
+                .select(`
+                    *,
+                    user_profiles (
+                        company_name,
+                        first_name,
+                        last_name,
+                        email
+                    )
+                `)
+                .eq('rfp_id', id)
+                .order('submitted_at', { ascending: false });
+
+            if (error) {
+                throw error;
+            }
+
+            responses = data;
+        } else if (profile?.role === 'supplier') {
+            // Suppliers can only see their own responses
+            const { data, error } = await supabase
+                .from('rfp_responses')
+                .select('*')
+                .eq('rfp_id', id)
+                .eq('supplier_id', user.id)
+                .order('submitted_at', { ascending: false });
+
+            if (error) {
+                throw error;
+            }
+
+            responses = data;
+        } else {
+            return NextResponse.json(
+                { error: 'Invalid user role' },
+                { status: 403 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            responses
+        });
+
+    } catch (error) {
+        console.error('Error fetching responses:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}

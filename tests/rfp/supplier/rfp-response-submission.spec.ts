@@ -1,136 +1,91 @@
 import { test, expect } from '@playwright/test';
-import { loginAsSupplier, logout } from '../../utils/auth-helpers';
+import { loginAsSupplier, generateUniqueEmail } from '../../utils/auth-helpers';
 
 test.describe('Supplier RFP Response Submission', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAsSupplier(page, { waitForDashboard: true });
+    await loginAsSupplier(page);
+  });
 
-    // Navigate to the RFPs page first
+  test('should display response form for published RFP', async ({ page }) => {
+    // Navigate to a published RFP
     await page.goto('/rfps');
-    await page.waitForLoadState('domcontentloaded');
+
+    // Click on the first published RFP
+    await page.click('text=Submit Proposal');
+
+    // Verify we're on the response form page
+    await expect(page.locator('h1')).toContainText('Submit Response to RFP');
+
+    // Verify form fields are present
+    await expect(page.getByLabel('Proposal')).toBeVisible();
+    await expect(page.getByLabel('Budget (USD)')).toBeVisible();
+    await expect(page.getByLabel('Timeline')).toBeVisible();
+    await expect(page.getByLabel('Relevant Experience')).toBeVisible();
   });
 
-  test.afterEach(async ({ page }) => {
-    await logout(page);
+  test('should validate required fields', async ({ page }) => {
+    await page.goto('/rfps/1/respond');
+
+    // Try to submit without filling required fields
+    await page.click('text=Submit Response');
+
+    // Verify validation errors
+    await expect(page.getByText('Proposal is required')).toBeVisible();
+    await expect(page.getByText('Budget is required')).toBeVisible();
+    await expect(page.getByText('Timeline is required')).toBeVisible();
+    await expect(page.getByText('Experience is required')).toBeVisible();
   });
 
-  test('should successfully submit RFP response', async ({ page }) => {
-    // Wait for RFP cards to load with proper timeout
-    await page.waitForSelector('[data-testid="rfp-card"]', { timeout: 10000 });
+  test('should submit response successfully', async ({ page }) => {
+    await page.goto('/rfps/1/respond');
 
-    const rfpCards = page.locator('[data-testid="rfp-card"]');
-    const cardCount = await rfpCards.count();
+    // Fill out the form
+    await page.getByLabel('Proposal').fill('This is our comprehensive proposal for your project. We have extensive experience in this area and can deliver within your timeline and budget.');
+    await page.getByLabel('Budget (USD)').fill('75000');
+    await page.getByLabel('Timeline').fill('3 months');
+    await page.getByLabel('Relevant Experience').fill('We have successfully completed 15+ similar projects over the past 5 years. Our team includes certified professionals with expertise in the required technologies.');
 
-    if (cardCount > 0) {
-      const firstCard = rfpCards.first();
-      const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
+    // Submit the form
+    await page.click('text=Submit Response');
 
-      // Ensure the button is visible before clicking
-      await expect(viewDetailsButton).toBeVisible();
-      await viewDetailsButton.click();
-
-      // Wait for navigation and page load
-      await page.waitForLoadState('domcontentloaded');
-
-      // Wait for the Submit Proposal button to be visible on the RFP detail page
-      await page.waitForSelector('[data-testid="rfp-submit-proposal-button"]', { timeout: 10000 });
-
-      // Click the Submit Proposal button to navigate to the respond page
-      const submitProposalButton = page.getByTestId('rfp-submit-proposal-button');
-      await expect(submitProposalButton).toBeVisible();
-      await submitProposalButton.click();
-
-      // Wait for navigation to the respond page and page load
-      await page.waitForLoadState('domcontentloaded');
-
-      // Wait for the response form to be visible on the respond page
-      await page.waitForSelector('[data-testid="rfp-response-form"]', { timeout: 15000 });
-
-      // Fill in the response form
-      await page.getByTestId('proposal-field').fill('This is my comprehensive proposal for the RFP');
-      await page.getByTestId('budget-field').fill('50000');
-      await page.getByTestId('timeline-field').fill('3 months');
-      await page.getByTestId('experience-field').fill('5 years of relevant experience');
-
-      // Verify all fields are filled correctly
-      await expect(page.getByTestId('proposal-field')).toHaveValue('This is my comprehensive proposal for the RFP');
-      await expect(page.getByTestId('budget-field')).toHaveValue('50000');
-      await expect(page.getByTestId('timeline-field')).toHaveValue('3 months');
-      await expect(page.getByTestId('experience-field')).toHaveValue('5 years of relevant experience');
-
-      // Verify submit button is enabled
-      const submitButton = page.getByTestId('submit-response-btn');
-      await expect(submitButton).toBeEnabled();
-
-      // Test that the form is ready for submission (but don't actually submit)
-      // This verifies the form functionality without depending on external API calls
-    } else {
-      // Log the issue and skip test if no RFPs available
-      console.log('No RFP cards found - skipping test');
-      test.skip();
-    }
+    // Verify success message
+    await expect(page.getByText('Your response has been submitted successfully!')).toBeVisible();
   });
 
-  test('should prevent duplicate responses from same supplier', async ({ page }) => {
-    // Wait for RFP cards to load with proper timeout
-    await page.waitForSelector('[data-testid="rfp-card"]', { timeout: 10000 });
+  test('should prevent duplicate responses', async ({ page }) => {
+    // First, submit a response
+    await page.goto('/rfps/1/respond');
+    await page.getByLabel('Proposal').fill('First response');
+    await page.getByLabel('Budget (USD)').fill('50000');
+    await page.getByLabel('Timeline').fill('2 months');
+    await page.getByLabel('Relevant Experience').fill('We have experience');
+    await page.click('text=Submit Response');
 
-    const rfpCards = page.locator('[data-testid="rfp-card"]');
-    const cardCount = await rfpCards.count();
+    // Try to submit another response to the same RFP
+    await page.goto('/rfps/1/respond');
 
-    if (cardCount > 0) {
-      const firstCard = rfpCards.first();
-      const viewDetailsButton = firstCard.getByTestId('rfp-view-details');
+    // Should be redirected with error message
+    await expect(page.getByText('You have already submitted a response to this RFP.')).toBeVisible();
+  });
 
-      // Ensure the button is visible before clicking
-      await expect(viewDetailsButton).toBeVisible();
-      await viewDetailsButton.click();
+  test('should show appropriate UI for expired RFPs', async ({ page }) => {
+    // Navigate to an expired RFP
+    await page.goto('/rfps/expired-rfp-id');
 
-      // Wait for navigation and page load
-      await page.waitForLoadState('domcontentloaded');
+    // Should show expired message and disabled submit button
+    await expect(page.getByText('This RFP has expired and is no longer accepting submissions.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'RFP Expired' })).toBeDisabled();
+  });
 
-      // Wait for the Submit Proposal button to be visible on the RFP detail page
-      await page.waitForSelector('[data-testid="rfp-submit-proposal-button"]', { timeout: 10000 });
+  test('should display RFP summary on response form', async ({ page }) => {
+    await page.goto('/rfps/1/respond');
 
-      // Click the Submit Proposal button to navigate to the respond page
-      const submitProposalButton = page.getByTestId('rfp-submit-proposal-button');
-      await expect(submitProposalButton).toBeVisible();
-      await submitProposalButton.click();
+    // Verify RFP summary is displayed
+    await expect(page.getByText('RFP Summary')).toBeVisible();
+    await expect(page.getByText('Submission Guidelines')).toBeVisible();
 
-      // Wait for navigation to the respond page and page load
-      await page.waitForLoadState('domcontentloaded');
-
-      // Wait for the response form to be visible on the respond page
-      await page.waitForSelector('[data-testid="rfp-response-form"]', { timeout: 15000 });
-
-      // Check if already responded (should show different UI)
-      const responseForm = page.getByTestId('rfp-response-form');
-
-      // The form should be visible since we're testing the first response
-      await expect(responseForm).toBeVisible();
-
-      // Fill form with test data
-      await page.getByTestId('proposal-field').fill('First response');
-      await page.getByTestId('budget-field').fill('40000');
-      await page.getByTestId('timeline-field').fill('2 months');
-      await page.getByTestId('experience-field').fill('3 years experience');
-
-      // Verify all fields are filled correctly
-      await expect(page.getByTestId('proposal-field')).toHaveValue('First response');
-      await expect(page.getByTestId('budget-field')).toHaveValue('40000');
-      await expect(page.getByTestId('timeline-field')).toHaveValue('2 months');
-      await expect(page.getByTestId('experience-field')).toHaveValue('3 years experience');
-
-      // Verify submit button is enabled
-      const submitButton = page.getByTestId('submit-response-btn');
-      await expect(submitButton).toBeEnabled();
-
-      // Test that the form is ready for submission (but don't actually submit)
-      // This verifies the form functionality without depending on external API calls
-    } else {
-      // Log the issue and skip test if no RFPs available
-      console.log('No RFP cards found - skipping test');
-      test.skip();
-    }
+    // Verify key information is shown
+    await expect(page.getByText('Budget Range')).toBeVisible();
+    await expect(page.getByText('Deadline')).toBeVisible();
   });
 });

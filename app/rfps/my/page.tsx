@@ -1,46 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FileText, Calendar, Building, Plus, Eye, Edit, Globe, MessageSquare, CheckCircle, XCircle, Clock } from "lucide-react";
+import { FileText, Calendar, Building, Plus, Eye, Edit, Globe, DollarSign, Clock, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { IRFP } from "@/types/rfp";
 import { useToast } from "@/components/toast/use-toast";
 import { useUser } from "@/lib/contexts/UserContext";
 
-interface RFPWithResponses extends IRFP {
-    responseCount: number;
-    responses: Array<{
-        id: string;
-        status: string;
-        supplier_name: string;
-        submitted_at: string;
-    }>;
+// Extended interface for response data from our API
+interface ISupplierResponse {
+    id: string;
+    rfpId: string;
+    rfpTitle: string;
+    company: string;
+    category: string;
+    status: string;
+    submittedAt: string;
+    proposal: string;
+    budget: number;
+    timeline: string;
+    experience: string;
+    rfpStatus: string;
+    rfpDeadline: string;
+    budgetRange: string;
 }
 
 interface ResponseData {
-    id: string;
     rfp_id: string;
     status: string;
-    supplier_name: string;
-    submitted_at: string;
+    [key: string]: string | number | boolean;
+}
+
+interface ExtendedRFP extends IRFP {
+    responseCount: number;
+    responses: ResponseData[];
 }
 
 export default function MyRfpsPage() {
     const { toast } = useToast();
-    const { profile } = useUser();
-    const [myRfps, setMyRfps] = useState<RFPWithResponses[]>([]);
+    const { profile, loading: userLoading } = useUser();
+    const [myRfps, setMyRfps] = useState<ExtendedRFP[]>([]);
+    const [myResponses, setMyResponses] = useState<ISupplierResponse[]>([]);
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [responsesLoading, setResponsesLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [publishingRfpId, setPublishingRfpId] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchMyRfps();
-    }, []);
-
-    const fetchMyRfps = async () => {
+    const fetchMyRfps = useCallback(async () => {
         try {
             setIsLoading(true);
             const [rfpsResponse, responsesResponse] = await Promise.all([
@@ -71,7 +80,7 @@ export default function MyRfpsPage() {
                     }, {});
 
                     // Merge responses with RFPs
-                    const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                    const rfpsWithResponses: ExtendedRFP[] = rfps.map((rfp: IRFP) => ({
                         ...rfp,
                         responseCount: responsesByRfp[rfp.id]?.length || 0,
                         responses: responsesByRfp[rfp.id] || []
@@ -80,7 +89,7 @@ export default function MyRfpsPage() {
                     setMyRfps(rfpsWithResponses);
                 } else {
                     // If responses fetch fails, still show RFPs without response data
-                    const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                    const rfpsWithResponses: ExtendedRFP[] = rfps.map((rfp: IRFP) => ({
                         ...rfp,
                         responseCount: 0,
                         responses: []
@@ -89,7 +98,7 @@ export default function MyRfpsPage() {
                 }
             } else {
                 // For non-buyers, just show RFPs without response data
-                const rfpsWithResponses = rfps.map((rfp: IRFP) => ({
+                const rfpsWithResponses: ExtendedRFP[] = rfps.map((rfp: IRFP) => ({
                     ...rfp,
                     responseCount: 0,
                     responses: []
@@ -102,7 +111,51 @@ export default function MyRfpsPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [profile]);
+
+    const fetchMyResponses = useCallback(async () => {
+        try {
+            setResponsesLoading(true);
+            console.log('Fetching supplier responses...'); // Debug log
+            const response = await fetch('/api/responses/my');
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error:', response.status, errorText);
+                throw new Error(`Failed to fetch responses: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Responses data:', data); // Debug log
+            setMyResponses(data.responses || []);
+        } catch (err) {
+            console.error('Error fetching responses:', err);
+            setError(err instanceof Error ? err.message : 'Failed to fetch responses');
+        } finally {
+            setResponsesLoading(false);
+        }
+    }, []);
+
+    const fetchUserData = useCallback(async () => {
+        if (userLoading || !profile) return;
+        
+        try {
+            setUserRole(profile.role);
+            
+            // Fetch appropriate data based on role
+            if (profile.role === 'buyer') {
+                await fetchMyRfps();
+            } else if (profile.role === 'supplier') {
+                await fetchMyResponses();
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }, [userLoading, profile, fetchMyRfps, fetchMyResponses]);
+
+    useEffect(() => {
+        fetchUserData();
+    }, [fetchUserData]);
 
     const handlePublishRfp = async (rfpId: string) => {
         try {
@@ -140,32 +193,36 @@ export default function MyRfpsPage() {
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'submitted':
-                return <Badge variant="secondary" className="bg-blue-100 text-blue-800"><Clock className="w-3 h-3 mr-1" />Submitted</Badge>;
-            case 'under_review':
-                return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />Under Review</Badge>;
-            case 'approved':
-                return <Badge variant="secondary" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
-            case 'rejected':
-                return <Badge variant="secondary" className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
-            default:
-                return <Badge variant="secondary">{status}</Badge>;
-        }
-    };
+
 
     const totalResponses = myRfps.reduce((sum, rfp) => sum + rfp.responseCount, 0);
     const pendingResponses = myRfps.reduce((sum, rfp) =>
-        sum + rfp.responses.filter(r => r.status === 'submitted' || r.status === 'under_review').length, 0
+        sum + rfp.responses.filter((r: ResponseData) => r.status === 'submitted' || r.status === 'under_review').length, 0
     );
+
+    // Show loading state while checking user
+    if (userLoading) {
+        return (
+            <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 w-full flex flex-col gap-8 max-w-7xl mx-auto p-6">
             <div className="w-full">
-                <h1 className="text-3xl font-bold mb-2">My RFPs & Responses</h1>
+                <h1 className="text-3xl font-bold mb-2">
+                    {userRole === 'buyer' ? 'My RFPs & Responses' : 'My RFP Responses'}
+                </h1>
                 <p className="text-muted-foreground">
-                    Manage your created RFPs and track supplier responses
+                    {userRole === 'buyer'
+                        ? 'Manage your created RFPs and track responses from suppliers'
+                        : 'View and manage your responses to RFPs'
+                    }
                 </p>
             </div>
 
@@ -213,203 +270,235 @@ export default function MyRfpsPage() {
                 </div>
             )}
 
-            {/* My Created RFPs */}
-            <section>
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold">My RFPs</h2>
-                    <div className="flex gap-2">
-                        {profile?.role === 'buyer' && totalResponses > 0 && (
-                            <Button asChild variant="outline">
-                                <Link href="/dashboard/responses">
-                                    <MessageSquare size="16" className="mr-2" />
-                                    Review All Responses ({totalResponses})
-                                </Link>
-                            </Button>
-                        )}
-                        {profile?.role === 'buyer' && (
-                            <Button asChild>
-                                <Link href="/rfps/create">
-                                    <Plus size="16" className="mr-2" />
-                                    Create New RFP
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                </div>
-
-                {isLoading && (
-                    <div className="text-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                        <p className="text-muted-foreground">Loading your RFPs...</p>
-                    </div>
-                )}
-
-                {error && (
-                    <div className="text-center py-12">
-                        <p className="text-red-500 mb-4">Error: {error}</p>
-                        <Button onClick={fetchMyRfps} variant="outline">
-                            Try Again
+            {/* My Created RFPs - Only for buyers */}
+            {userRole === 'buyer' && (
+                <section>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-semibold">My RFPs</h2>
+                        <Button asChild>
+                            <Link href="/rfps/create">
+                                <Plus size="16" className="mr-2" />
+                                Create New RFP
+                            </Link>
                         </Button>
                     </div>
-                )}
 
-                {!isLoading && !error && (
-                    <>
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {myRfps.map((rfp) => (
-                                <Card key={rfp.id} className="hover:shadow-lg transition-shadow">
-                                    <CardHeader>
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <CardTitle className="text-lg mb-2">{rfp.title}</CardTitle>
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                                                    <Building size="16" />
-                                                    {rfp.company}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                                                    <Calendar size="16" />
-                                                    Due: {new Date(rfp.deadline).toLocaleDateString()}
-                                                </div>
-                                                {rfp.responseCount > 0 && (
-                                                    <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
-                                                        <MessageSquare size="16" />
-                                                        {rfp.responseCount} response{rfp.responseCount !== 1 ? 's' : ''}
+                    {isLoading && (
+                        <div className="text-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            <p className="text-muted-foreground">Loading your RFPs...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="text-center py-12">
+                            <p className="text-red-500 mb-4">Error: {error}</p>
+                            <Button onClick={fetchMyRfps} variant="outline">
+                                Try Again
+                            </Button>
+                        </div>
+                    )}
+
+                    {!isLoading && !error && (
+                        <>
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                {myRfps.map((rfp) => (
+                                    <Card key={rfp.id} className="hover:shadow-lg transition-shadow">
+                                        <CardHeader>
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <CardTitle className="text-lg mb-2">{rfp.title}</CardTitle>
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                                                        <Building size="16" />
+                                                        {rfp.company}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <FileText size="20" className="text-blue-600" />
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <span className={`text-xs px-2 py-1 rounded-full ${rfp.status === 'published'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                {rfp.status === 'published' ? 'Published' : 'Draft'}
-                                            </span>
-                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                                {rfp.category}
-                                            </span>
-                                        </div>
-
-                                        {/* Show recent responses if any */}
-                                        {rfp.responses.length > 0 && (
-                                            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                                                <h4 className="font-medium mb-2 text-sm">Recent Responses</h4>
-                                                <div className="space-y-2">
-                                                    {rfp.responses.slice(0, 2).map((response) => (
-                                                        <div key={response.id} className="flex items-center justify-between text-xs">
-                                                            <span className="text-muted-foreground">
-                                                                {response.supplier_name}
-                                                            </span>
-                                                            {getStatusBadge(response.status)}
-                                                        </div>
-                                                    ))}
-                                                    {rfp.responses.length > 2 && (
-                                                        <div className="text-xs text-muted-foreground text-center">
-                                                            +{rfp.responses.length - 2} more
-                                                        </div>
-                                                    )}
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                                                        <Calendar size="16" />
+                                                        Due: {new Date(rfp.deadline).toLocaleDateString()}
+                                                    </div>
                                                 </div>
+                                                <FileText size="20" className="text-blue-600" />
                                             </div>
-                                        )}
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className={`text-xs px-2 py-1 rounded-full ${rfp.status === 'published'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    {rfp.status === 'published' ? 'Published' : 'Draft'}
+                                                </span>
+                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                                    {rfp.category}
+                                                </span>
+                                            </div>
 
-                                        <div className="flex gap-2 flex-wrap">
-                                            <Button asChild variant="outline" size="sm">
-                                                <Link href={`/rfps/${rfp.id}`}>
-                                                    <Eye size="16" className="mr-2" />
-                                                    View RFP
-                                                </Link>
-                                            </Button>
+                                            <div className="text-sm text-muted-foreground mb-4">
+                                                {rfp.status === 'published' ? 'Published' : 'Draft'}
+                                            </div>
 
-                                            {rfp.responseCount > 0 && profile?.role === 'buyer' && (
-                                                <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                                                    <Link href={`/dashboard/responses?rfp=${rfp.id}`}>
-                                                        <MessageSquare size="16" className="mr-2" />
-                                                        Review Responses
+                                            <div className="flex gap-2">
+                                                <Button asChild variant="outline" size="sm">
+                                                    <Link href={`/rfps/${rfp.id}`}>
+                                                        <Eye size="16" className="mr-2" />
+                                                        View
                                                     </Link>
                                                 </Button>
-                                            )}
 
-                                            {rfp.status === 'draft' && (
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => handlePublishRfp(rfp.id)}
-                                                    disabled={publishingRfpId === rfp.id}
-                                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                                >
-                                                    <Globe size="16" className="mr-2" />
-                                                    {publishingRfpId === rfp.id ? 'Publishing...' : 'Publish'}
+                                                {rfp.status === 'draft' && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => handlePublishRfp(rfp.id)}
+                                                        disabled={publishingRfpId === rfp.id}
+                                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                                    >
+                                                        <Globe size="16" className="mr-2" />
+                                                        {publishingRfpId === rfp.id ? 'Publishing...' : 'Publish'}
+                                                    </Button>
+                                                )}
+
+                                                <Button asChild size="sm">
+                                                    <Link href={`/rfps/${rfp.id}/edit`}>
+                                                        <Edit size="16" className="mr-2" />
+                                                        Edit
+                                                    </Link>
                                                 </Button>
-                                            )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
 
-                                            <Button asChild size="sm">
-                                                <Link href={`/rfps/${rfp.id}/edit`}>
-                                                    <Edit size="16" className="mr-2" />
-                                                    Edit
-                                                </Link>
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-
-                        {myRfps.length === 0 && (
-                            <div className="text-center py-12">
-                                <FileText size="48" className="mx-auto text-muted-foreground mb-4" />
-                                <h3 className="text-lg font-semibold mb-2">No RFPs Created Yet</h3>
-                                <p className="text-muted-foreground mb-4">
-                                    Start by creating your first RFP to find suppliers and vendors.
-                                </p>
-                                {profile?.role === 'buyer' && (
+                            {myRfps.length === 0 && (
+                                <div className="text-center py-12">
+                                    <FileText size="48" className="mx-auto text-muted-foreground mb-4" />
+                                    <h3 className="text-lg font-semibold mb-2">No RFPs Created Yet</h3>
+                                    <p className="text-muted-foreground mb-4">
+                                        Start by creating your first RFP to find suppliers and vendors.
+                                    </p>
                                     <Button asChild>
                                         <Link href="/rfps/create">
                                             <Plus size="16" className="mr-2" />
                                             Create Your First RFP
                                         </Link>
                                     </Button>
-                                )}
-                            </div>
-                        )}
-                    </>
-                )}
-            </section>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </section>
+            )}
 
-            {/* Quick Actions for Buyers */}
-            {profile?.role === 'buyer' && totalResponses > 0 && (
+            {/* My Responses - Only for suppliers */}
+            {userRole === 'supplier' && (
                 <section>
-                    <Card className="bg-blue-50 border-blue-200">
-                        <CardHeader>
-                            <CardTitle className="text-blue-900 flex items-center gap-2">
-                                <MessageSquare size="20" />
-                                Quick Actions
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                                    <Link href="/dashboard/responses">
-                                        <MessageSquare size="16" className="mr-2" />
-                                        Review All Responses ({totalResponses})
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline">
-                                    <Link href="/dashboard/responses?status=submitted">
-                                        <Clock size="16" className="mr-2" />
-                                        Review Pending ({pendingResponses})
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline">
-                                    <Link href="/dashboard/responses?status=approved">
-                                        <CheckCircle size="16" className="mr-2" />
-                                        View Approved
-                                    </Link>
-                                </Button>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-semibold">My RFP Responses</h2>
+                        <Button asChild>
+                            <Link href="/rfps">
+                                <Plus size="16" className="mr-2" />
+                                Browse RFPs
+                            </Link>
+                        </Button>
+                    </div>
+
+                    {responsesLoading && (
+                        <div className="text-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            <p className="text-muted-foreground">Loading your responses...</p>
+                        </div>
+                    )}
+
+                    {!responsesLoading && (
+                        <>
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                {myResponses.map((response) => (
+                                    <Card key={response.id} className="hover:shadow-lg transition-shadow">
+                                        <CardHeader>
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <CardTitle className="text-lg mb-2">{response.rfpTitle}</CardTitle>
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                                                        <Building size="16" />
+                                                        {response.company}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                                                        <Calendar size="16" />
+                                                        Submitted: {new Date(response.submittedAt).toLocaleDateString()}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <DollarSign size="16" />
+                                                        Your Bid: ${response.budget.toLocaleString()}
+                                                    </div>
+                                                </div>
+                                                <FileText size="20" className="text-blue-600" />
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                                    {response.category}
+                                                </span>
+                                                <span className={`text-xs px-2 py-1 rounded-full ${response.status === 'submitted'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : response.status === 'accepted'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : response.status === 'rejected'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                    {response.status.charAt(0).toUpperCase() + response.status.slice(1)}
+                                                </span>
+                                            </div>
+
+                                            <div className="text-sm text-muted-foreground mb-4">
+                                                <p className="line-clamp-2">{response.proposal}</p>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <Button asChild variant="outline" size="sm">
+                                                    <Link href={`/rfps/${response.rfpId}`}>
+                                                        <Eye size="16" className="mr-2" />
+                                                        View RFP
+                                                    </Link>
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </div>
-                        </CardContent>
-                    </Card>
+
+                            {myResponses.length === 0 && (
+                                <div className="text-center py-12">
+                                    <FileText size="48" className="mx-auto text-muted-foreground mb-4" />
+                                    <h3 className="text-lg font-semibold mb-2">No Responses Yet</h3>
+                                    <p className="text-muted-foreground mb-4">
+                                        You haven&apos;t responded to any RFPs yet. Browse available RFPs to get started.
+                                    </p>
+                                    <Button asChild>
+                                        <Link href="/rfps">
+                                            <Plus size="16" className="mr-2" />
+                                            Browse Available RFPs
+                                        </Link>
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </section>
+            )}
+
+            {/* Both sections for mixed view */}
+            {userRole === 'buyer' && (
+                <section>
+                    <h2 className="text-2xl font-semibold mb-6">My Responses</h2>
+                    <div className="text-center py-12">
+                        <FileText size="48" className="mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No Responses Yet</h3>
+                        <p className="text-muted-foreground">
+                            As a buyer, responses to your RFPs will appear here when suppliers submit them.
+                        </p>
+                    </div>
                 </section>
             )}
         </div>

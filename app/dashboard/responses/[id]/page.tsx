@@ -23,7 +23,7 @@ import {
     AlertCircle,
     Loader2
 } from "lucide-react";
-import { RFPResponse } from "@/types/rfp";
+import { IResponseWithRFP } from "@/types/rfp";
 import Link from "next/link";
 
 export default function ResponseDetailPage() {
@@ -31,7 +31,7 @@ export default function ResponseDetailPage() {
     const params = useParams();
     const responseId = params.id as string;
 
-    const [response, setResponse] = useState<RFPResponse | null>(null);
+    const [response, setResponse] = useState<IResponseWithRFP | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [rejectionReason, setRejectionReason] = useState("");
